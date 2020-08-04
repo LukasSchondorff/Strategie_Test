@@ -41,6 +41,10 @@ public class Main : Node
     }
 
     public void JoinGame(string address) {
+        if (address.Empty()){
+            GD.Print("Please enter an address!");
+            return;
+        }
         GD.Print($"Joining game with address {address}");
 
         var clientPeer = new NetworkedMultiplayerENet();
