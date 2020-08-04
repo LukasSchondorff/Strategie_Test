@@ -7,7 +7,7 @@ public class Main : Node
     private readonly int default_port = 7777;
     private readonly int max_players = 4;
 
-    private string PlayerName { get; set; }
+    public string PlayerName { get; set; }
 
     private Dictionary<int, string> Players = new Dictionary<int, string>();
 
@@ -19,6 +19,7 @@ public class Main : Node
 		GetTree().Connect("connected_to_server", this, nameof(ConnectedToServer));
 		GetTree().Connect("connection_failed", this, nameof(ConnectionFailed));
 		GetTree().Connect("server_disconnected", this, nameof(ServerDisconnected));
+        //GetTree().Connect("close_connection", this, nameof(ConnectionClosed));
     }
 
     public bool HostGame(string name) 
@@ -111,6 +112,11 @@ public class Main : Node
         GD.Print("Disconnected from the server");
     }
 
+    public void ConnectionClosed() 
+    {
+        GD.Print("Disconnected from the server");
+    }
+
     [Remote]
     private void RegisterPlayer(string playerName) 
     {
@@ -134,7 +140,4 @@ public class Main : Node
         }
     }
 
-    public string GetPlayerName(){
-        return PlayerName;
-    }
 }
