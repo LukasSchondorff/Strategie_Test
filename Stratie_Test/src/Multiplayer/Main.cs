@@ -134,4 +134,7 @@ public class Main : Node
         }
     }
 
+    public string GetPlayerName(){
+        return PlayerName;
+    }
 }
