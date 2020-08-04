@@ -26,10 +26,10 @@ public class Main : Node
 		GetTree().Connect("server_disconnected", this, nameof(ServerDisconnected));
     }
 
-    public void HostGame(string name) {
+    public bool HostGame(string name) {
         if (name.Empty()){
             GD.Print("Please enter a name!");
-            return;
+            return false;
         }
         PlayerName = name;
 
@@ -38,38 +38,43 @@ public class Main : Node
         GetTree().NetworkPeer = peer;
 
         GD.Print("You are now hosting.");
+
+        return true;
     }
 
-    public void JoinGame(string address) {
+    public bool JoinGame(string address) {
         if (address.Empty()){
             GD.Print("Please enter an address!");
-            return;
+            return false;
         }
         GD.Print($"Joining game with address {address}");
 
         var clientPeer = new NetworkedMultiplayerENet();
         var result = clientPeer.CreateClient(address, default_port);
 
-        GetTree().NetworkPeer = clientPeer;
-    }
-
-    public void LeaveGame() {
-        GD.Print("Leaving current game");
-
-        // "Delete" all player nodes
-        foreach(var player in Players){
-            GetNode(player.Key.ToString()).QueueFree();
+        if(result != 0) {
+            GD.Print("Failure!");
         }
 
-        Players.Clear();
+        GetTree().NetworkPeer = clientPeer;
 
-        // "Delete" network node
-        GetNode(GetTree().GetNetworkUniqueId().ToString()).QueueFree();
+        return true;
+    }
+
+    public bool LeaveGame() {
+        if(GetTree().NetworkPeer == null) {
+            return false;
+        }
+        GD.Print("Leaving current game");
+
+        Players.Clear();
 
         Rpc(nameof(RemovePlayer), GetTree().GetNetworkUniqueId());
 
         ((NetworkedMultiplayerENet) GetTree().NetworkPeer).CloseConnection();
         GetTree().NetworkPeer = null;
+
+        return true;
     }
 
     public void PlayerConnected(int id, string name) {
@@ -80,30 +85,42 @@ public class Main : Node
         RpcId(id, nameof(RegisterPlayer), PlayerName);
     }
 
-    public void PlayerDisconnected() {
+    public void PlayerDisconnected(int id) {
+        GD.Print($"Player {id} discomnnected");
 
+        RemovePlayer(id);
     }
 
     public void ConnectedToServer() {
-
+        GD.Print("Successfully connected to the server");
     }
 
     public void ConnectionFailed() {
+        GetTree().NetworkPeer = null;
 
+        GD.Print("Failed to connect");
     }
 
     public void ServerDisconnected() {
-
+        GD.Print("Disconnected from the server");
     }
 
     [Remote]
-    private void RegisterPlayer(String playerName) {
+    private void RegisterPlayer(string playerName) {
+        var id = GetTree().GetRpcSenderId();
 
+        Players.Add(id, playerName);
+
+        GD.Print($"{playerName} added with Id {id}");
     }
 
     [Remote]
     private void RemovePlayer(int id){
-
+        if (Players.ContainsKey(id)){
+            Players.Remove(id);
+        } else {
+            GD.Print($"Player {id} not found");
+        }
     }
 
 }

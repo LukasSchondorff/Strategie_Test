@@ -1,14 +1,8 @@
 extends Button
 
-var Main_class : Script
-var Main_node : Node
-
-# Called when the node enters the scene tree for the first time.
-func _ready() -> void:
-	Main_class = preload("res://src/Multiplayer/Main.cs")
-	Main_node = Main_class.new()
-	add_child(Main_node)
-
 
 func _on_Join_button_up() -> void:
-	Main_node.JoinGame(get_node("../Address").text)
+	var ret = get_node("/root/Multiplayer_node").JoinGame(get_node("../Address").text)
+	disabled = ret
+	get_node("../Leave").disabled = not ret
+	get_node("../Host").disabled = ret
