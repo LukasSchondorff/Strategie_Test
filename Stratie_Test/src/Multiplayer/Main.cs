@@ -54,7 +54,22 @@ public class Main : Node
     }
 
     public void LeaveGame() {
+        GD.Print("Leaving current game");
 
+        // "Delete" all player nodes
+        foreach(var player in Players){
+            GetNode(player.Key.ToString()).QueueFree();
+        }
+
+        Players.Clear();
+
+        // "Delete" network node
+        GetNode(GetTree().GetNetworkUniqueId().ToString()).QueueFree();
+
+        Rpc(nameof(RemovePlayer), GetTree().GetNetworkUniqueId());
+
+        ((NetworkedMultiplayerENet) GetTree().NetworkPeer).CloseConnection();
+        GetTree().NetworkPeer = null;
     }
 
     public void PlayerConnected() {
