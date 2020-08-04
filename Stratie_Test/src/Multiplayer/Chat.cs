@@ -19,7 +19,8 @@ public class Chat : Node
 	[Remote]
 	private void ReceiveMessage(string message)
 	{
-		ChatArea.AddText(message);
+		Script Main = (Script) GetNode("/root/Multiplayer_node").GetScript();
+		ChatArea.AddText(Main.Call("GetPlayerName") + ": " + message);
 		ChatArea.Newline();
 	}
 
