@@ -1,12 +1,14 @@
-[gd_scene load_steps=4 format=2]
+[gd_scene load_steps=5 format=2]
 
 [ext_resource path="res://src/Multiplayer/UI/Host.gd" type="Script" id=1]
 [ext_resource path="res://src/Multiplayer/UI/Join.gd" type="Script" id=2]
 [ext_resource path="res://src/Multiplayer/UI/Leave.gd" type="Script" id=3]
+[ext_resource path="res://src/Multiplayer/UI/MultiplayerButtons.gd" type="Script" id=4]
 
 [node name="Buttons" type="VBoxContainer"]
 margin_right = 300.0
 margin_bottom = 124.0
+script = ExtResource( 4 )
 __meta__ = {
 "_edit_use_anchors_": false
 }
