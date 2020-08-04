@@ -11,11 +11,6 @@ public class Main : Node
 
     private Dictionary<int, string> Players = new Dictionary<int, string>();
 
-    private Button HostButton { get; set; }
-	private Button JoinButton { get; set; }
-	private Button LeaveButton { get; set; }
-	private TextEdit NameText { get; set; }
-	private TextEdit AddressText { get; set; }
     // Called when the node enters the scene tree for the first time.
     public override void _Ready()
     {
@@ -42,12 +37,14 @@ public class Main : Node
         return true;
     }
 
-    public bool JoinGame(string address) {
+    public bool JoinGame(string address, string name) {
         if (address.Empty()){
             GD.Print("Please enter an address!");
             return false;
         }
         GD.Print($"Joining game with address {address}");
+
+        PlayerName = name;
 
         var clientPeer = new NetworkedMultiplayerENet();
         var result = clientPeer.CreateClient(address, default_port);
@@ -77,16 +74,14 @@ public class Main : Node
         return true;
     }
 
-    public void PlayerConnected(int id, string name) {
-        PlayerName = name;
-
+    public void PlayerConnected(int id) {
         GD.Print($"tell other player my name is {PlayerName}");
 
         RpcId(id, nameof(RegisterPlayer), PlayerName);
     }
 
     public void PlayerDisconnected(int id) {
-        GD.Print($"Player {id} discomnnected");
+        GD.Print($"Player {id} disconnected");
 
         RemovePlayer(id);
     }
