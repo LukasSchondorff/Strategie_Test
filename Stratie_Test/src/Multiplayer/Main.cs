@@ -40,8 +40,13 @@ public class Main : Node
         GD.Print("You are now hosting.");
     }
 
-    public void JoinGame() {
+    public void JoinGame(string address) {
+        GD.Print($"Joining game with address {address}");
 
+        var clientPeer = new NetworkedMultiplayerENet();
+        var result = clientPeer.CreateClient(address, default_port);
+
+        GetTree().NetworkPeer = clientPeer;
     }
 
     public void LeaveGame() {
