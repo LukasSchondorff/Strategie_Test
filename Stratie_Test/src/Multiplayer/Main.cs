@@ -72,8 +72,12 @@ public class Main : Node
         GetTree().NetworkPeer = null;
     }
 
-    public void PlayerConnected() {
+    public void PlayerConnected(int id, string name) {
+        PlayerName = name;
 
+        GD.Print($"tell other player my name is {PlayerName}");
+
+        RpcId(id, nameof(RegisterPlayer), PlayerName);
     }
 
     public void PlayerDisconnected() {
