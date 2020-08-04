@@ -21,7 +21,8 @@ public class Main : Node
 		GetTree().Connect("server_disconnected", this, nameof(ServerDisconnected));
     }
 
-    public bool HostGame(string name) {
+    public bool HostGame(string name) 
+    {
         if (name.Empty()){
             GD.Print("Please enter a name!");
             return false;
@@ -37,8 +38,10 @@ public class Main : Node
         return true;
     }
 
-    public bool JoinGame(string address, string name) {
-        if (address.Empty()){
+    public bool JoinGame(string address, string name) 
+    {
+        if (address.Empty())
+        {
             GD.Print("Please enter an address!");
             return false;
         }
@@ -49,7 +52,8 @@ public class Main : Node
         var clientPeer = new NetworkedMultiplayerENet();
         var result = clientPeer.CreateClient(address, default_port);
 
-        if(result != 0) {
+        if(result != 0) 
+        {
             GD.Print("Failure!");
         }
 
@@ -58,8 +62,10 @@ public class Main : Node
         return true;
     }
 
-    public bool LeaveGame() {
-        if(GetTree().NetworkPeer == null) {
+    public bool LeaveGame() 
+    {
+        if(GetTree().NetworkPeer == null) 
+        {
             return false;
         }
         GD.Print("Leaving current game");
@@ -74,34 +80,40 @@ public class Main : Node
         return true;
     }
 
-    public void PlayerConnected(int id) {
+    public void PlayerConnected(int id)
+    {
         GD.Print($"tell other player my name is {PlayerName}");
 
         RpcId(id, nameof(RegisterPlayer), PlayerName);
     }
 
-    public void PlayerDisconnected(int id) {
+    public void PlayerDisconnected(int id) 
+    {
         GD.Print($"Player {id} disconnected");
 
         RemovePlayer(id);
     }
 
-    public void ConnectedToServer() {
+    public void ConnectedToServer() 
+    {
         GD.Print("Successfully connected to the server");
     }
 
-    public void ConnectionFailed() {
+    public void ConnectionFailed() 
+    {
         GetTree().NetworkPeer = null;
 
         GD.Print("Failed to connect");
     }
 
-    public void ServerDisconnected() {
+    public void ServerDisconnected() 
+    {
         GD.Print("Disconnected from the server");
     }
 
     [Remote]
-    private void RegisterPlayer(string playerName) {
+    private void RegisterPlayer(string playerName) 
+    {
         var id = GetTree().GetRpcSenderId();
 
         Players.Add(id, playerName);
@@ -110,10 +122,14 @@ public class Main : Node
     }
 
     [Remote]
-    private void RemovePlayer(int id){
-        if (Players.ContainsKey(id)){
+    private void RemovePlayer(int id)
+    {
+        if (Players.ContainsKey(id))
+        {
             Players.Remove(id);
-        } else {
+        } 
+        else 
+        {
             GD.Print($"Player {id} not found");
         }
     }
