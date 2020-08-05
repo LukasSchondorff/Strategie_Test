@@ -6,3 +6,12 @@ export_presets.cfg
 
 #Mono-specific ignores
 .mono/
+
+#csproj-specific ignores
+*.old
+
+#VisualStudio-specific ignore
+.vs/
+
+#VisualStudioCode-specific ignore
+.vscode/
