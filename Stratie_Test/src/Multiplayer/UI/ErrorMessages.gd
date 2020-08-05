@@ -12,6 +12,7 @@ func _on_Error(message: String) -> void:
 	get_node("../Name").editable = true
 	get_node("../Address").editable = true
 	get_node("../../MultiplayerChat/Lower/Send").disabled = true
+	get_node("../../MultiplayerChat/Lower/MessageText").editable = false
 
 func _on_Success(message: String) -> void:
 	bbcode_text = "[color=green]" + message + "[/color]"
@@ -22,3 +23,5 @@ func _on_Success(message: String) -> void:
 		get_node("../Name").editable = false
 		get_node("../Address").editable = false
 		get_node("../../MultiplayerChat/Lower/Send").disabled = false
+		get_node("../../MultiplayerChat/Lower/MessageText").editable = true
+		get_node("../../MultiplayerChat/Lower/MessageText").grab_focus()
