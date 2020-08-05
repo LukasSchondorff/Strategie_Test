@@ -1,0 +1,55 @@
+[gd_scene load_steps=6 format=2]
+
+[ext_resource path="res://src/Multiplayer/Chat.cs" type="Script" id=1]
+[ext_resource path="res://Assets/Fonts/UbuntuMono-R.ttf" type="DynamicFontData" id=2]
+
+[sub_resource type="DynamicFont" id=3]
+font_data = ExtResource( 2 )
+
+[sub_resource type="InputEventKey" id=1]
+scancode = 16777221
+
+[sub_resource type="ShortCut" id=2]
+shortcut = SubResource( 1 )
+
+[node name="MultiplayerChat" type="VSplitContainer"]
+margin_right = 356.0
+margin_bottom = 176.0
+split_offset = 140
+dragger_visibility = 2
+script = ExtResource( 1 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="ChatArea" type="RichTextLabel" parent="."]
+margin_right = 356.0
+margin_bottom = 140.0
+focus_mode = 2
+custom_fonts/normal_font = SubResource( 3 )
+bbcode_enabled = true
+scroll_following = true
+selection_enabled = true
+
+[node name="Lower" type="HSplitContainer" parent="."]
+margin_top = 140.0
+margin_right = 356.0
+margin_bottom = 176.0
+split_offset = 200
+dragger_visibility = 2
+
+[node name="MessageText" type="LineEdit" parent="Lower"]
+margin_right = 258.0
+margin_bottom = 36.0
+grow_horizontal = 2
+placeholder_text = "Your message here..."
+caret_blink = true
+caret_blink_speed = 0.5
+
+[node name="Send" type="Button" parent="Lower"]
+margin_left = 258.0
+margin_right = 356.0
+margin_bottom = 36.0
+disabled = true
+shortcut = SubResource( 2 )
+text = "Send"

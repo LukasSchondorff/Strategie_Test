@@ -1,21 +1,154 @@
 using Godot;
 using System;
+using System.Collections.Generic;
 
 public class Main : Node
 {
-    // Declare member variables here. Examples:
-    // private int a = 2;
-    // private string b = "text";
+	private readonly int default_port = 7777;
+	private readonly int max_players = 4;
 
-    // Called when the node enters the scene tree for the first time.
-    public override void _Ready()
-    {
-        
-    }
+	public string PlayerName { get; set; }
 
-//  // Called every frame. 'delta' is the elapsed time since the previous frame.
-//  public override void _Process(float delta)
-//  {
-//      
-//  }
+	private Dictionary<int, string> Players = new Dictionary<int, string>();
+
+	[Signal]
+	public delegate void ErrorSignal(string message);
+	[Signal]
+	public delegate void SuccessSignal(string message);
+
+	// Called when the node enters the scene tree for the first time.
+	public override void _Ready()
+	{
+		GetTree().Connect("network_peer_connected", this, nameof(PlayerConnected));
+		GetTree().Connect("network_peer_disconnected", this, nameof(PlayerDisconnected));
+		GetTree().Connect("connected_to_server", this, nameof(ConnectedToServer));
+		GetTree().Connect("connection_failed", this, nameof(ConnectionFailed));
+		GetTree().Connect("server_disconnected", this, nameof(ServerDisconnected));
+	}
+
+	public bool HostGame(string name) 
+	{
+		if (name.Empty()){
+			EmitSignal(nameof(ErrorSignal), "Please enter a name!");
+			return false;
+		}
+		PlayerName = name;
+
+		var peer = new NetworkedMultiplayerENet();
+		peer.CreateServer(default_port, max_players);
+		GetTree().NetworkPeer = peer;
+
+		EmitSignal(nameof(SuccessSignal), "You are now hosting.");
+
+		return true;
+	}
+
+	public bool JoinGame(string address, string name) 
+	{
+		if (address.Empty() || name.Empty())
+		{
+			EmitSignal(nameof(ErrorSignal), "Please enter a name and an address!");
+			return false;
+		}
+		GD.Print($"Joining game with address {address}");
+
+		PlayerName = name;
+
+		var clientPeer = new NetworkedMultiplayerENet();
+		var result = clientPeer.CreateClient(address, default_port);
+
+		if(result != 0) 
+		{
+			EmitSignal(nameof(ErrorSignal), $"Connection failed! ({result.ToString()})");
+			return false;
+		}
+
+		GetTree().NetworkPeer = clientPeer;
+		EmitSignal(nameof(SuccessSignal), "Connected!");
+
+		return true;
+	}
+
+	public bool LeaveGame() 
+	{
+		if(GetTree().NetworkPeer == null) 
+		{
+			EmitSignal(nameof(ErrorSignal), "No current connection!");
+			return false;
+		}
+
+		Players.Clear();
+
+		Rpc(nameof(RemovePlayer), GetTree().GetNetworkUniqueId());
+
+		((NetworkedMultiplayerENet) GetTree().NetworkPeer).CloseConnection();
+		GetTree().NetworkPeer = null;
+
+		EmitSignal(nameof(SuccessSignal), "Disconnected!");
+
+		return true;
+	}
+
+	public void PlayerConnected(int id)
+	{
+		GD.Print($"tell other player my name is {PlayerName}");
+
+		RpcId(id, nameof(RegisterPlayer), PlayerName);
+	}
+
+	public void PlayerDisconnected(int id) 
+	{
+		GD.Print($"Player {id} disconnected");
+
+		RemovePlayer(id);
+	}
+
+	public void ConnectedToServer() 
+	{
+		EmitSignal(nameof(SuccessSignal), "Successfully connected to server");
+	}
+
+	public void ConnectionFailed() 
+	{
+		GetTree().NetworkPeer = null;
+
+		EmitSignal(nameof(ErrorSignal), "Failed to connect");
+	}
+
+	public void ServerDisconnected() 
+	{
+		EmitSignal(nameof(ErrorSignal), "Disconnected from the server");
+	}
+
+	public void ConnectionClosed() 
+	{
+		EmitSignal(nameof(ErrorSignal), "Connection closed");
+	}
+
+	[Remote]
+	private void RegisterPlayer(string playerName) 
+	{
+		var id = GetTree().GetRpcSenderId();
+
+		Players.Add(id, playerName);
+
+		GD.Print($"{playerName} added with Id {id}");
+	}
+
+	[Remote]
+	private void RemovePlayer(int id)
+	{
+		if (Players.ContainsKey(id))
+		{
+			string name;
+			Players.TryGetValue(id, out name);
+			EmitSignal(nameof(ErrorSignal), $"{name} left the game");
+			Players.Remove(id);
+		} 
+		else 
+		{
+			GD.Print($"Player {id} not found");
+		}
+	}
+
 }
