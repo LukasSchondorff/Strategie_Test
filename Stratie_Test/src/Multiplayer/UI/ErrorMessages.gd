@@ -11,6 +11,7 @@ func _on_Error(message: String) -> void:
 	get_node("../Leave").disabled = true
 	get_node("../Name").editable = true
 	get_node("../Address").editable = true
+	get_node("../../MultiplayerChat/Lower/Send").disabled = true
 
 func _on_Success(message: String) -> void:
 	bbcode_text = "[color=green]" + message + "[/color]"
