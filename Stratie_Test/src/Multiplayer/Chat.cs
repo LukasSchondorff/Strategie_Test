@@ -17,16 +17,18 @@ public class Chat : Node
 	}
 
 	[Remote]
-	private void ReceiveMessage(string message)
+	private void ReceiveMessage(string message, string name)
 	{
 		// public variable, didn't find a better solution
-		ChatArea.AddText(GetNode("/root/Multiplayer_node").Get("PlayerName") + ": " + message);
+		ChatArea.AddText(name + ": " + message);
 		ChatArea.Newline();
 	}
 
 	private void SendMessage()
 	{
-		Rpc(nameof(ReceiveMessage), MessageText.Text);
+		Rpc(nameof(ReceiveMessage), MessageText.Text, GetNode("/root/Multiplayer_node").Get("PlayerName"));
+		ChatArea.AddText(GetNode("/root/Multiplayer_node").Get("PlayerName") + ": " + MessageText.Text);
 		MessageText.Clear();
+		ChatArea.Newline();
 	}
 }

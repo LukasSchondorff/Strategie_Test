@@ -19,7 +19,6 @@ public class Main : Node
 		GetTree().Connect("connected_to_server", this, nameof(ConnectedToServer));
 		GetTree().Connect("connection_failed", this, nameof(ConnectionFailed));
 		GetTree().Connect("server_disconnected", this, nameof(ServerDisconnected));
-        //GetTree().Connect("close_connection", this, nameof(ConnectionClosed));
     }
 
     public bool HostGame(string name) 
