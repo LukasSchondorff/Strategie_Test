@@ -9,3 +9,4 @@ func _on_Leave_button_up() -> void:
 	disabled = ret
 	get_node("../Host").disabled = not ret
 	get_node("../Join").disabled = not ret
+	get_node("../../MultiplayerChat/Lower/Send").disabled = ret
