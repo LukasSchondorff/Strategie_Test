@@ -1,13 +1,14 @@
-[gd_scene load_steps=5 format=2]
+[gd_scene load_steps=6 format=2]
 
 [ext_resource path="res://src/Multiplayer/UI/Host.gd" type="Script" id=1]
 [ext_resource path="res://src/Multiplayer/UI/Join.gd" type="Script" id=2]
 [ext_resource path="res://src/Multiplayer/UI/Leave.gd" type="Script" id=3]
 [ext_resource path="res://src/Multiplayer/UI/MultiplayerButtons.gd" type="Script" id=4]
+[ext_resource path="res://src/Multiplayer/UI/ErrorMessages.gd" type="Script" id=5]
 
 [node name="Buttons" type="VBoxContainer"]
 margin_right = 300.0
-margin_bottom = 124.0
+margin_bottom = 152.0
 script = ExtResource( 4 )
 __meta__ = {
 "_edit_use_anchors_": false
@@ -54,6 +55,14 @@ margin_bottom = 124.0
 hint_tooltip = "Leave"
 text = "Leave"
 script = ExtResource( 3 )
+
+[node name="ErrorMessages" type="RichTextLabel" parent="."]
+margin_top = 128.0
+margin_right = 300.0
+margin_bottom = 152.0
+bbcode_enabled = true
+scroll_active = false
+script = ExtResource( 5 )
 [connection signal="button_up" from="Host" to="Host" method="_on_Host_button_up"]
 [connection signal="button_up" from="Join" to="Join" method="_on_Join_button_up"]
 [connection signal="button_up" from="Leave" to="Leave" method="_on_Leave_button_up"]
