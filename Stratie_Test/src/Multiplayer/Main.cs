@@ -120,6 +120,9 @@ public class Main : Node
 
 	public void ServerDisconnected() 
 	{
+		Players.Clear();
+		GetTree().NetworkPeer = null;
+		
 		EmitSignal(nameof(ErrorSignal), "Disconnected from the server");
 	}
 
