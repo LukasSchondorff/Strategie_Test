@@ -17,18 +17,23 @@ public class Chat : Node
 	}
 
 	[Remote]
-	private void ReceiveMessage(string message, string name)
-	{
-		// public variable, didn't find a better solution
-		ChatArea.AddText(name + ": " + message);
-		ChatArea.Newline();
+	private void ReceiveMessage(string message)
+	{	
+		AddMessage(message);
 	}
 
 	private void SendMessage()
 	{
-		Rpc(nameof(ReceiveMessage), MessageText.Text, GetNode("/root/Multiplayer_node").Get("PlayerName"));
-		ChatArea.AddText(GetNode("/root/Multiplayer_node").Get("PlayerName") + ": " + MessageText.Text);
+		string message = $"[color=yellow]{GetNode("/root/Multiplayer_node").Get("PlayerName"),-10}:[/color] {MessageText.Text}";
+		Rpc(nameof(ReceiveMessage), message);
+		AddMessage(message);
 		MessageText.Clear();
+		ChatArea.Newline();
+	}
+
+	private void AddMessage(string message)
+	{
+		ChatArea.AppendBbcode(message);
 		ChatArea.Newline();
 	}
 }
