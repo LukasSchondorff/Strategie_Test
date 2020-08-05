@@ -6,4 +6,6 @@ func _on_Join_button_up() -> void:
 	disabled = ret
 	get_node("../Leave").disabled = not ret
 	get_node("../Host").disabled = ret
+	get_node("../Name").editable = not ret
+	get_node("../Address").editable = not ret
 	get_node("../../MultiplayerChat/Lower/Send").disabled = not ret
