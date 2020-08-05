@@ -12,3 +12,4 @@ func _on_Leave_button_up() -> void:
 	get_node("../Name").editable = ret
 	get_node("../Address").editable = ret
 	get_node("../../MultiplayerChat/Lower/Send").disabled = ret
+	get_node("../../MultiplayerChat/Lower/MessageText").editable = not ret
