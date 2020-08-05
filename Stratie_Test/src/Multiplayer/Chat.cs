@@ -28,7 +28,6 @@ public class Chat : Node
 		Rpc(nameof(ReceiveMessage), message);
 		AddMessage(message);
 		MessageText.Clear();
-		ChatArea.Newline();
 	}
 
 	private void AddMessage(string message)
