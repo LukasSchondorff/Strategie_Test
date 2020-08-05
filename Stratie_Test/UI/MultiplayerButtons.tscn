@@ -7,15 +7,15 @@
 [ext_resource path="res://src/Multiplayer/UI/ErrorMessages.gd" type="Script" id=5]
 
 [node name="Buttons" type="VBoxContainer"]
-margin_right = 300.0
-margin_bottom = 152.0
+margin_right = 285.0
+margin_bottom = 162.0
 script = ExtResource( 4 )
 __meta__ = {
 "_edit_use_anchors_": false
 }
 
 [node name="Name" type="LineEdit" parent="."]
-margin_right = 300.0
+margin_right = 285.0
 margin_bottom = 24.0
 hint_tooltip = "Player Name"
 max_length = 10
@@ -25,7 +25,7 @@ caret_blink_speed = 0.5
 
 [node name="Address" type="LineEdit" parent="."]
 margin_top = 28.0
-margin_right = 300.0
+margin_right = 285.0
 margin_bottom = 52.0
 hint_tooltip = "Server Address"
 placeholder_text = "Server Address..."
@@ -34,7 +34,7 @@ caret_blink_speed = 0.5
 
 [node name="Host" type="Button" parent="."]
 margin_top = 56.0
-margin_right = 300.0
+margin_right = 285.0
 margin_bottom = 76.0
 hint_tooltip = "Host Game"
 text = "Host Game"
@@ -42,7 +42,7 @@ script = ExtResource( 1 )
 
 [node name="Join" type="Button" parent="."]
 margin_top = 80.0
-margin_right = 300.0
+margin_right = 285.0
 margin_bottom = 100.0
 hint_tooltip = "Join Game"
 text = "Join Game"
@@ -50,7 +50,7 @@ script = ExtResource( 2 )
 
 [node name="Leave" type="Button" parent="."]
 margin_top = 104.0
-margin_right = 300.0
+margin_right = 285.0
 margin_bottom = 124.0
 hint_tooltip = "Leave"
 text = "Leave"
@@ -58,8 +58,9 @@ script = ExtResource( 3 )
 
 [node name="ErrorMessages" type="RichTextLabel" parent="."]
 margin_top = 128.0
-margin_right = 300.0
-margin_bottom = 152.0
+margin_right = 285.0
+margin_bottom = 162.0
+size_flags_vertical = 3
 bbcode_enabled = true
 scroll_active = false
 script = ExtResource( 5 )
