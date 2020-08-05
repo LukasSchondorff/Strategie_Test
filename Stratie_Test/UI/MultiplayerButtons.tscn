@@ -17,6 +17,7 @@ __meta__ = {
 margin_right = 300.0
 margin_bottom = 24.0
 hint_tooltip = "Player Name"
+max_length = 10
 placeholder_text = "Player Name..."
 caret_blink = true
 caret_blink_speed = 0.5
