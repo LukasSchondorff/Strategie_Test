@@ -15,6 +15,8 @@ public class Main : Node
 	public delegate void ErrorSignal(string message);
 	[Signal]
 	public delegate void SuccessSignal(string message);
+	[Signal]
+	public delegate void InfoSignal(string message);
 
 	// Called when the node enters the scene tree for the first time.
 	public override void _Ready()
@@ -38,6 +40,7 @@ public class Main : Node
 		peer.CreateServer(default_port, max_players);
 		GetTree().NetworkPeer = peer;
 
+		EmitSignal(nameof(SuccessSignal), "Successfully connected to server");
 		EmitSignal(nameof(SuccessSignal), "You are now hosting.");
 
 		return true;
@@ -64,7 +67,7 @@ public class Main : Node
 		}
 
 		GetTree().NetworkPeer = clientPeer;
-		EmitSignal(nameof(SuccessSignal), "Connected!");
+		EmitSignal(nameof(SuccessSignal), "Connecting...");
 
 		return true;
 	}
@@ -142,7 +145,7 @@ public class Main : Node
 		{
 			string name;
 			Players.TryGetValue(id, out name);
-			EmitSignal(nameof(ErrorSignal), $"{name} left the game");
+			EmitSignal(nameof(InfoSignal), $"{name} left the game");
 			Players.Remove(id);
 		} 
 		else 
