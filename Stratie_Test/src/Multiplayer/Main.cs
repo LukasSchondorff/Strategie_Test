@@ -13,6 +13,8 @@ public class Main : Node
 
 	[Signal]
 	public delegate void ErrorSignal(string message);
+	[Signal]
+	public delegate void SuccessSignal(string message);
 
 	// Called when the node enters the scene tree for the first time.
 	public override void _Ready()
@@ -27,7 +29,6 @@ public class Main : Node
 	public bool HostGame(string name) 
 	{
 		if (name.Empty()){
-			GD.Print("Please enter a name!");
 			EmitSignal(nameof(ErrorSignal), "Please enter a name!");
 			return false;
 		}
@@ -37,17 +38,16 @@ public class Main : Node
 		peer.CreateServer(default_port, max_players);
 		GetTree().NetworkPeer = peer;
 
-		GD.Print("You are now hosting.");
+		EmitSignal(nameof(SuccessSignal), "You are now hosting.");
 
 		return true;
 	}
 
 	public bool JoinGame(string address, string name) 
 	{
-		if (address.Empty())
+		if (address.Empty() || name.Empty())
 		{
-			GD.Print("Please enter an address!");
-			EmitSignal(nameof(ErrorSignal), "Please enter an address!");
+			EmitSignal(nameof(ErrorSignal), "Please enter a name and an address!");
 			return false;
 		}
 		GD.Print($"Joining game with address {address}");
@@ -59,10 +59,12 @@ public class Main : Node
 
 		if(result != 0) 
 		{
-			GD.Print("Failure!");
+			EmitSignal(nameof(ErrorSignal), $"Connection failed! ({result.ToString()})");
+			return false;
 		}
 
 		GetTree().NetworkPeer = clientPeer;
+		EmitSignal(nameof(SuccessSignal), "Connected!");
 
 		return true;
 	}
@@ -74,7 +76,6 @@ public class Main : Node
 			EmitSignal(nameof(ErrorSignal), "No current connection!");
 			return false;
 		}
-		GD.Print("Leaving current game");
 
 		Players.Clear();
 
@@ -82,6 +83,8 @@ public class Main : Node
 
 		((NetworkedMultiplayerENet) GetTree().NetworkPeer).CloseConnection();
 		GetTree().NetworkPeer = null;
+
+		EmitSignal(nameof(SuccessSignal), "Disconnected!");
 
 		return true;
 	}
@@ -102,26 +105,23 @@ public class Main : Node
 
 	public void ConnectedToServer() 
 	{
-		GD.Print("Successfully connected to the server");
+		EmitSignal(nameof(SuccessSignal), "Successfully connected to server");
 	}
 
 	public void ConnectionFailed() 
 	{
 		GetTree().NetworkPeer = null;
 
-		GD.Print("Failed to connect");
 		EmitSignal(nameof(ErrorSignal), "Failed to connect");
 	}
 
 	public void ServerDisconnected() 
 	{
-		GD.Print("Disconnected from the server");
 		EmitSignal(nameof(ErrorSignal), "Disconnected from the server");
 	}
 
 	public void ConnectionClosed() 
 	{
-		GD.Print("Disconnected from the server");
 		EmitSignal(nameof(ErrorSignal), "Connection closed");
 	}
 
@@ -140,6 +140,9 @@ public class Main : Node
 	{
 		if (Players.ContainsKey(id))
 		{
+			string name;
+			Players.TryGetValue(id, out name);
+			EmitSignal(nameof(ErrorSignal), $"{name} left the game");
 			Players.Remove(id);
 		} 
 		else 
