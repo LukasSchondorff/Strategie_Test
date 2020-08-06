@@ -24,10 +24,13 @@ public class Chat : Node
 
 	private void SendMessage()
 	{
-		string message = $"[color=yellow]{GetNode("/root/Multiplayer_node").Get("PlayerName"),-10}:[/color] {MessageText.Text}";
-		Rpc(nameof(ReceiveMessage), message);
-		AddMessage(message);
-		MessageText.Clear();
+		if (!MessageText.Text.Empty())
+		{
+			string message = $"[color=yellow]{GetNode("/root/Multiplayer_node").Get("PlayerName"),-10}:[/color] {MessageText.Text}";
+			Rpc(nameof(ReceiveMessage), message);
+			AddMessage(message);
+			MessageText.Clear();
+		}
 	}
 
 	private void AddMessage(string message)
