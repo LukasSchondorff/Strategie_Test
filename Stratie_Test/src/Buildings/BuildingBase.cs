@@ -1,13 +1,11 @@
 using Godot;
 using System;
 
-public class BuildingBase : Node {
+public class BuildingBase {
 
     private Vector3 building_location;
-    
 
-    public override void _Ready() {
+    public BuildingBase() {
         
     }
-    
 }

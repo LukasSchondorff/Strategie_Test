@@ -1,0 +1,18 @@
+[gd_scene format=2]
+
+[node name="Control" type="Control"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+margin_right = -823.0
+margin_bottom = -568.0
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Button" type="Button" parent="."]
+margin_right = 200.0
+margin_bottom = 30.0
+text = "Base_Building"
+__meta__ = {
+"_edit_use_anchors_": false
+}
