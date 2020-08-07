@@ -67,8 +67,9 @@ public class MapGen : GridMap
 		{
 			foreach (int z in Enumerable.Range((int)from.z, (int)to.z))
 			{
+				int index = GetTileIndex(open_simplex_new.GetNoise3d(x, 0, z));
 				mutex.WaitOne();
-				SetCellItem(x, 0, z, GetTileIndex(open_simplex_new.GetNoise3d(x, 0, z)));
+				SetCellItem(x, 0, z, index);
 				mutex.ReleaseMutex();
 			}
 		}
