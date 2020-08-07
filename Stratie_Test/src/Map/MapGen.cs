@@ -126,37 +126,41 @@ public class MapGen : GridMap
 		if (@event is InputEventMouseButton)
 		{
 			var mouse_event = (InputEventMouseButton) @event;
-			if (mouse_event.ButtonIndex == (int) ButtonList.Left && mouse_event.IsPressed())
+			if (mouse_event.ButtonIndex == (int) ButtonList.Left)
 			{
-				GD.Print(click_position);
-				pos1 = click_position/3;
-			}
-			if (mouse_event.ButtonIndex == (int) ButtonList.Left && !mouse_event.IsPressed())
-			{
-				GD.Print(click_position);
-				pos2 = click_position/3;
-				foreach (int x in Enumerable.Range(0, (int) Math.Abs(pos2.x-pos1.x)+1))
+				if (mouse_event.IsPressed())
 				{
-					foreach (int z in Enumerable.Range(0, (int)Math.Abs(pos2.z-pos1.z)+1))
+					GD.Print(click_position);
+					pos1 = click_position/3;
+				}
+				else 
+				{
+					GD.Print(click_position);
+					pos2 = click_position/3;
+					foreach (int x in Enumerable.Range(0, (int) Math.Abs(pos2.x-pos1.x)+1))
 					{
-						//GetCellItem(x + pos1.x,0,z + pos1.z);
-						if (pos1.x < pos2.x)
+						foreach (int z in Enumerable.Range(0, (int)Math.Abs(pos2.z-pos1.z)+1))
 						{
-							if (pos1.z < pos2.z)
-								SetCellItem((int)(x+pos1.x), 0, (int)(z+pos1.z) + 1, 32);
+							//GetCellItem(x + pos1.x,0,z + pos1.z);
+							if (pos1.x < pos2.x)
+							{
+								if (pos1.z < pos2.z)
+									SetCellItem((int)(x+pos1.x), 0, (int)(z+pos1.z) + 1, 32);
+								else
+									SetCellItem((int)(x+pos1.x), 0, (int)(z+pos2.z) + 1, 32);
+							} 
 							else
-								SetCellItem((int)(x+pos1.x), 0, (int)(z+pos2.z) + 1, 32);
-						} 
-						else
-						{
-							if (pos1.z < pos2.z)
-								SetCellItem((int)(x+pos2.x), 0, (int)(z+pos1.z) + 1, 32);
-							else
-								SetCellItem((int)(x+pos2.x), 0, (int)(z+pos2.z) + 1, 32);
+							{
+								if (pos1.z < pos2.z)
+									SetCellItem((int)(x+pos2.x), 0, (int)(z+pos1.z) + 1, 32);
+								else
+									SetCellItem((int)(x+pos2.x), 0, (int)(z+pos2.z) + 1, 32);
+							}
 						}
 					}
 				}
 			}
+			
 			if (mouse_event.ButtonIndex == (int) ButtonList.Right && mouse_event.IsPressed())
 				SetCellItem((int)(click_position[0]/3), 0, (int)(click_position[2]/3) + 1, 32);
 
