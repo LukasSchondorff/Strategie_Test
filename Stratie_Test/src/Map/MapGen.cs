@@ -21,6 +21,9 @@ public class MapGen : GridMap
 	
 	private PlayerLevel playerlevel;
 
+	[Signal]
+	public delegate void ReadySignal();
+
 	public override void _Ready()
 	{
 		width = chunk_number*chunk_loader*(int)CellSize.x;
@@ -44,8 +47,8 @@ public class MapGen : GridMap
 		open_simplex_new.Lacunarity = randomizer.RandfRange(0.1f, 4);
 		open_simplex_new.Persistence = randomizer.RandfRange(0, 1);
 		mutex = new System.Threading.Mutex();
-		
-		
+
+
 		GenerateWorld();
 		GetNode("Area").Connect("input_event", this, nameof(OnAreaInputEvent));
 		GenerateCollisionArea();
@@ -63,8 +66,8 @@ public class MapGen : GridMap
 		box.Extents = new Vector3(width, height*2, length) / 2;
 		shape.Shape = box;
 		shape.Translation = new Vector3(width, 0, length) / 2;
-		GetNode("Area").AddChild(shape);	
-		
+		GetNode("Area").AddChild(shape);
+
 		/*
 		//Visual Representation
 		MeshInstance mi = new MeshInstance();
@@ -96,9 +99,9 @@ public class MapGen : GridMap
 		{
 			foreach (int z in Enumerable.Range((int)from.z, diff_z))
 			{
-				int index = GetTileIndex(open_simplex_new.GetNoise3d(x, 0, z+1));
+				int index = GetTileIndex(open_simplex_new.GetNoise3d(x, 0, z));
 				mutex.WaitOne();
-				SetCellItem(x, 0, z+1, index);
+				SetCellItem(x, 0, z, index, 10);
 				mutex.ReleaseMutex();
 			}
 		}
@@ -125,10 +128,12 @@ public class MapGen : GridMap
 
 		foreach (var threaddy in thread)
 			threaddy.Join();
+
+		EmitSignal(nameof(ReadySignal));
 	}
 
 
-	private int GetTileIndex(float noise_sample) 
+	private int GetTileIndex(float noise_sample)
 	{
 		switch (noise_sample)
 		{
@@ -148,7 +153,7 @@ public class MapGen : GridMap
 				return 0;
 		}
 	}
-	
+
 
 	public void OnAreaInputEvent(Camera camera, InputEvent @event, Vector3 click_position, Vector3 click_normal, int shape_idx)
 	{
@@ -163,7 +168,7 @@ public class MapGen : GridMap
 					playerlevel.CheckSpace(click_position);
 					pos1 = click_position/3;
 				}
-				else 
+				else
 				{
 					//GD.Print(click_position);
 					pos2 = click_position/3;
@@ -175,25 +180,41 @@ public class MapGen : GridMap
 							if (pos1.x < pos2.x)
 							{
 								if (pos1.z < pos2.z)
-									SetCellItem((int)(x+pos1.x), 0, (int)(z+pos1.z) + 1, 32);
+									SetCellItem((int)(x+pos1.x), 0, (int)(z+pos1.z), 32);
 								else
-									SetCellItem((int)(x+pos1.x), 0, (int)(z+pos2.z) + 1, 32);
-							} 
+									SetCellItem((int)(x+pos1.x), 0, (int)(z+pos2.z), 32);
+							}
 							else
 							{
 								if (pos1.z < pos2.z)
-									SetCellItem((int)(x+pos2.x), 0, (int)(z+pos1.z) + 1, 32);
+									SetCellItem((int)(x+pos2.x), 0, (int)(z+pos1.z), 32);
 								else
-									SetCellItem((int)(x+pos2.x), 0, (int)(z+pos2.z) + 1, 32);
+									SetCellItem((int)(x+pos2.x), 0, (int)(z+pos2.z), 32);
 							}
 						}
 					}
 				}
 			}
-			
+
 			if (mouse_event.ButtonIndex == (int) ButtonList.Right && mouse_event.IsPressed())
 				SetCellItem((int)(click_position[0]/3), 0, (int)(click_position[2]/3) + 1, 32);
 
+
+		}
+	}
+
+	public void ClickedSomething(Camera camera, InputEvent @event, Vector3 click_position, Vector3 click_normal, int shape_idx)
+	{
+		if (@event is InputEventMouseButton)
+		{
+			var mouse_event = (InputEventMouseButton) @event;
+			if (mouse_event.ButtonIndex == (int) ButtonList.Left)
+			{
+				if (mouse_event.IsPressed())
+				{
+					GD.Print(click_position);
+				}
+			}
 		}
 	}
 }
