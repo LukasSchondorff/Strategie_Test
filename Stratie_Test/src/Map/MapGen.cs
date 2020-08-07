@@ -18,6 +18,8 @@ public class MapGen : GridMap
 	Vector3 pos2;
 	System.Threading.Mutex mutex;
 
+	[Signal]
+	public delegate void ReadySignal();
 
 	public override void _Ready()
 	{
@@ -79,9 +81,9 @@ public class MapGen : GridMap
 		{
 			foreach (int z in Enumerable.Range((int)from.z, diff_z))
 			{
-				int index = GetTileIndex(open_simplex_new.GetNoise3d(x, 0, z+1));
+				int index = GetTileIndex(open_simplex_new.GetNoise3d(x, 0, z));
 				mutex.WaitOne();
-				SetCellItem(x, 0, z+1, index);
+				SetCellItem(x, 0, z, index, 10);
 				mutex.ReleaseMutex();
 			}
 		}
@@ -91,7 +93,7 @@ public class MapGen : GridMap
 	{
 		var thread = new List<System.Threading.Thread>();
 		var index = 0;
-
+		
 		foreach (var chunk in Enumerable.Range(1, chunk_number*chunk_number))
 			thread.Add(new System.Threading.Thread(GenerateQuadrant));
 
@@ -108,6 +110,8 @@ public class MapGen : GridMap
 
 		foreach (var threaddy in thread)
 			threaddy.Join();
+		
+		EmitSignal(nameof(ReadySignal));
 	}
 
 
@@ -157,16 +161,16 @@ public class MapGen : GridMap
 							if (pos1.x < pos2.x)
 							{
 								if (pos1.z < pos2.z)
-									SetCellItem((int)(x+pos1.x), 0, (int)(z+pos1.z) + 1, 32);
+									SetCellItem((int)(x+pos1.x), 0, (int)(z+pos1.z), 32);
 								else
-									SetCellItem((int)(x+pos1.x), 0, (int)(z+pos2.z) + 1, 32);
+									SetCellItem((int)(x+pos1.x), 0, (int)(z+pos2.z), 32);
 							} 
 							else
 							{
 								if (pos1.z < pos2.z)
-									SetCellItem((int)(x+pos2.x), 0, (int)(z+pos1.z) + 1, 32);
+									SetCellItem((int)(x+pos2.x), 0, (int)(z+pos1.z), 32);
 								else
-									SetCellItem((int)(x+pos2.x), 0, (int)(z+pos2.z) + 1, 32);
+									SetCellItem((int)(x+pos2.x), 0, (int)(z+pos2.z), 32);
 							}
 						}
 					}
@@ -175,7 +179,23 @@ public class MapGen : GridMap
 			
 			if (mouse_event.ButtonIndex == (int) ButtonList.Right && mouse_event.IsPressed())
 				SetCellItem((int)(click_position[0]/3), 0, (int)(click_position[2]/3) + 1, 32);
+				
 
+		}
+	}
+
+	public void ClickedSomething(Camera camera, InputEvent @event, Vector3 click_position, Vector3 click_normal, int shape_idx)
+	{
+		if (@event is InputEventMouseButton)
+		{
+			var mouse_event = (InputEventMouseButton) @event;
+			if (mouse_event.ButtonIndex == (int) ButtonList.Left)
+			{
+				if (mouse_event.IsPressed())
+				{
+					GD.Print(click_position);
+				}
+			}
 		}
 	}
 }
