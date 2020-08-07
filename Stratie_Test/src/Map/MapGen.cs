@@ -6,11 +6,11 @@ using System.Collections.Generic;
 
 public class MapGen : GridMap
 {
-	[Export(PropertyHint.Range, "max 10")]
+	[Export(PropertyHint.Range, "0,15,1,or_greater")]
 	private int chunk_number = 5;
 	int chunk_loader = 32;
 	int width;
-	int height;
+	float height;
 	int length;
 	OpenSimplexNoise open_simplex_new;
 	float colision_area_factor = 1.5f;
@@ -22,7 +22,7 @@ public class MapGen : GridMap
 	{
 		width = chunk_number*chunk_loader;
 		length = width;
-		height = 1;
+		height = 0.5f;
 
 		RandomNumberGenerator randomizer = new RandomNumberGenerator();
 		randomizer.Randomize();
@@ -39,14 +39,20 @@ public class MapGen : GridMap
 		mutex = new System.Threading.Mutex();
 		GenerateWorld();
 		GetNode("Area").Connect("input_event", this, nameof(OnAreaInputEvent));
-		//GenerateCollisionArea()
+		GenerateCollisionArea();
 	}
 
 
 	private void GenerateCollisionArea()
 	{
-		//((CollisionShape) GetNode("Area/CollisionShape")).Transform.origin = new Vector3(width*colision_area_factor, height*colision_area_factor, length*colision_area_factor);
-		//((CollisionShape) GetNode("Area/CollisionShape")).Transform.Scaled(new Vector3(width*colision_area_factor, height*colision_area_factor, length*colision_area_factor))
+		CollisionShape shape = new CollisionShape();
+		shape.Name = "center";
+		BoxShape box = new BoxShape();
+		box.ResourceName = "box";
+		box.Extents = new Vector3(width, height/colision_area_factor, length) * colision_area_factor;
+		shape.Shape = box;
+		shape.Translation = new Vector3(width, 0, length) * colision_area_factor;
+		GetNode("Area").AddChild(shape);	
 	}
 
 
@@ -67,9 +73,9 @@ public class MapGen : GridMap
 		{
 			foreach (int z in Enumerable.Range((int)from.z, (int)to.z))
 			{
-				int index = GetTileIndex(open_simplex_new.GetNoise3d(x, 0, z));
+				int index = GetTileIndex(open_simplex_new.GetNoise3d(x, 0, z+1));
 				mutex.WaitOne();
-				SetCellItem(x, 0, z, index);
+				SetCellItem(x, 0, z+1, index);
 				mutex.ReleaseMutex();
 			}
 		}
