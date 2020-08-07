@@ -9,6 +9,7 @@ public class MapGen : GridMap
 	[Export(PropertyHint.Range, "0,15,or_greater")]
 	private int chunk_number = 5;
 	int chunk_loader = 32;
+	private Vector3 cell_size = new Vector3(3f,1.5f,3f);
 	int width;
 	float height;
 	int length;
@@ -17,7 +18,8 @@ public class MapGen : GridMap
 	Vector3 pos1;
 	Vector3 pos2;
 	System.Threading.Mutex mutex;
-
+	
+	private PlayerLevel playerlevel;
 
 	public override void _Ready()
 	{
@@ -26,6 +28,8 @@ public class MapGen : GridMap
 		height = 1f;
 
 		Godot.Collections.Array test = GetMeshes();
+
+		CellSize = cell_size;
 
 		RandomNumberGenerator randomizer = new RandomNumberGenerator();
 		randomizer.Randomize();
@@ -40,9 +44,13 @@ public class MapGen : GridMap
 		open_simplex_new.Lacunarity = randomizer.RandfRange(0.1f, 4);
 		open_simplex_new.Persistence = randomizer.RandfRange(0, 1);
 		mutex = new System.Threading.Mutex();
+		
+		
 		GenerateWorld();
 		GetNode("Area").Connect("input_event", this, nameof(OnAreaInputEvent));
 		GenerateCollisionArea();
+		playerlevel = ((PlayerLevel) GetNode("../PlayerLevel"));
+		playerlevel.init(cell_size, width, length);
 	}
 
 
@@ -56,6 +64,15 @@ public class MapGen : GridMap
 		shape.Shape = box;
 		shape.Translation = new Vector3(width, 0, length) / 2;
 		GetNode("Area").AddChild(shape);	
+		
+		/*
+		//Visual Representation
+		MeshInstance mi = new MeshInstance();
+		mi.Mesh = new CubeMesh();
+		mi.Translation = new Vector3(width, 0, length) / 2;
+		mi.Scale = new Vector3(width, height*2, length) / 2;
+		GetNode("Area").AddChild(mi);
+		*/
 	}
 
 
@@ -111,7 +128,7 @@ public class MapGen : GridMap
 	}
 
 
-	private int GetTileIndex(float noise_sample)
+	private int GetTileIndex(float noise_sample) 
 	{
 		switch (noise_sample)
 		{
@@ -131,7 +148,7 @@ public class MapGen : GridMap
 				return 0;
 		}
 	}
-
+	
 
 	public void OnAreaInputEvent(Camera camera, InputEvent @event, Vector3 click_position, Vector3 click_normal, int shape_idx)
 	{
@@ -143,11 +160,12 @@ public class MapGen : GridMap
 				if (mouse_event.IsPressed())
 				{
 					GD.Print(click_position);
+					playerlevel.CheckSpace(click_position);
 					pos1 = click_position/3;
 				}
 				else 
 				{
-					GD.Print(click_position);
+					//GD.Print(click_position);
 					pos2 = click_position/3;
 					foreach (int x in Enumerable.Range(0, (int) Math.Abs(pos2.x-pos1.x)+1))
 					{

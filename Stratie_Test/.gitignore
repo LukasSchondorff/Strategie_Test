@@ -15,3 +15,6 @@ export_presets.cfg
 
 #VisualStudioCode-specific ignore
 .vscode/
+
+#Riders ignore
+.idea/

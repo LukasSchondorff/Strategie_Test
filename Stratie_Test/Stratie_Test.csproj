@@ -60,10 +60,18 @@
     <Reference Include="System" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Map\PlayerLevel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="src\Buildings\BuildingBase.cs" />
     <Compile Include="src\Multiplayer\Main.cs" />
     <Compile Include="src\Multiplayer\Chat.cs" />
     <Compile Include="src\Map\MapGen.cs" />
+    <Compile Include="src\Units\UnitBase.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="src\Buildings" />
+    <Folder Include="src\InputManager" />
+    <Folder Include="src\Units" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
 </Project>
