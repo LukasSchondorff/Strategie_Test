@@ -138,16 +138,16 @@ public class MapGen : GridMap
 		switch (noise_sample)
 		{
 			case float f when f < -0.5f:
-				return 0; // index
-
-			case float f when f < 0f:
 				return 1; // index
 
-			case float f when f < 0.5f:
-				return 46; // index
+			case float f when f < 0f: // normal ground
+				return 36; // index
+
+			case float f when f < 0.5f: //sand
+				return 2; // index
 
 			case float f when f < 1f:
-				return 27; // index
+				return 1; // index
 
 			default:
 				return 0;
