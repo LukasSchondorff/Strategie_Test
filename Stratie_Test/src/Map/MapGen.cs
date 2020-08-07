@@ -6,7 +6,7 @@ using System.Collections.Generic;
 
 public class MapGen : GridMap
 {
-	[Export(PropertyHint.Range, "0,15,1,or_greater")]
+	[Export(PropertyHint.Range, "0,15,or_greater")]
 	private int chunk_number = 5;
 	int chunk_loader = 32;
 	int width;
@@ -18,11 +18,14 @@ public class MapGen : GridMap
 	Vector3 pos2;
 	System.Threading.Mutex mutex;
 
+
 	public override void _Ready()
 	{
-		width = chunk_number*chunk_loader;
+		width = chunk_number*chunk_loader*(int)CellSize.x;
 		length = width;
-		height = 0.5f;
+		height = 1f;
+
+		Godot.Collections.Array test = GetMeshes();
 
 		RandomNumberGenerator randomizer = new RandomNumberGenerator();
 		randomizer.Randomize();
@@ -49,9 +52,9 @@ public class MapGen : GridMap
 		shape.Name = "center";
 		BoxShape box = new BoxShape();
 		box.ResourceName = "box";
-		box.Extents = new Vector3(width, height/colision_area_factor, length) * colision_area_factor;
+		box.Extents = new Vector3(width, height*2, length) / 2;
 		shape.Shape = box;
-		shape.Translation = new Vector3(width, 0, length) * colision_area_factor;
+		shape.Translation = new Vector3(width, 0, length) / 2;
 		GetNode("Area").AddChild(shape);	
 	}
 
@@ -69,9 +72,12 @@ public class MapGen : GridMap
 		var from = fromto[0];
 		var to = fromto[1];
 
-		foreach (int x in Enumerable.Range((int)from.x, (int)to.x))
+		var diff_x = (int) Math.Abs(to.x - from.x);
+		var diff_z = (int) Math.Abs(to.z - from.z);
+
+		foreach (int x in Enumerable.Range((int)from.x, diff_x))
 		{
-			foreach (int z in Enumerable.Range((int)from.z, (int)to.z))
+			foreach (int z in Enumerable.Range((int)from.z, diff_z))
 			{
 				int index = GetTileIndex(open_simplex_new.GetNoise3d(x, 0, z+1));
 				mutex.WaitOne();
@@ -86,7 +92,7 @@ public class MapGen : GridMap
 		var thread = new List<System.Threading.Thread>();
 		var index = 0;
 
-		foreach (var chunk in Enumerable.Range(0, chunk_number*chunk_number))
+		foreach (var chunk in Enumerable.Range(1, chunk_number*chunk_number))
 			thread.Add(new System.Threading.Thread(GenerateQuadrant));
 
 		foreach (int x in Enumerable.Range(0, chunk_number))
