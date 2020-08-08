@@ -14,6 +14,7 @@ mesh_library = ExtResource( 3 )
 cell_size = Vector3( 3, 1.5, 3 )
 cell_octant_size = 16
 cell_center_y = false
+collision_mask = 0
 data = {
 "cells": PoolIntArray(  )
 }
@@ -22,7 +23,9 @@ __meta__ = {
 "_editor_clip_": 0,
 "_editor_floor_": Vector3( 0, 0, 0 )
 }
-Hill_Fatness = 0.02
+chunk_number = 7
+Hill_Fatness = 0.76
+Hill_Tallness = 20
 
 [node name="Area" type="Area" parent="GridMap"]
 

@@ -15,6 +15,7 @@ public class MapGen : GridMap
 	[Export(PropertyHint.Range, "1,100,or_greater")]
 	private int Hill_Tallness = 100;
 	
+	private List <Area> arealevel;
 	int chunk_loader = 32;
 	private Vector3 cell_size = new Vector3(3f,1.5f,3f);
 	int width;
@@ -36,6 +37,13 @@ public class MapGen : GridMap
 		width = chunk_number*chunk_loader*(int)CellSize.x;
 		length = width;
 		height = 1f;
+
+		arealevel = new List <Area>();
+
+			
+			
+			
+
 
 		Godot.Collections.Array test = GetMeshes();
 
@@ -109,7 +117,18 @@ public class MapGen : GridMap
 				int[] index_height = GetTileIndex(open_simplex_new.GetNoise3d(x, 0, z));
 				mutex.WaitOne();
 				SetCellItem(x, index_height[1], z, index_height[0], 10);
+				Area temp_area = new Area();
+				CollisionShape shape = new CollisionShape();
+				shape.Shape = new BoxShape();
+				shape.Translation = new Vector3(x*cell_size.x + cell_size.x/2, index_height[1]*cell_size.y, z*cell_size.z + cell_size.z/2);
+				shape.Scale = new Vector3(cell_size.x/2, 1, cell_size.z/2);temp_area.Monitoring = false;
+				temp_area.CollisionMask = 0;
+				temp_area.CollisionLayer = 0b10000000000000000000;
+				temp_area.AddChild(shape);
+				arealevel.Add(temp_area);
 				mutex.ReleaseMutex();
+				
+				
 			}
 		}
 	}
@@ -136,6 +155,11 @@ public class MapGen : GridMap
 		foreach (var threaddy in thread)
 			threaddy.Join();
 
+		foreach (Area area in arealevel){
+			AddChild(area);
+			area.Connect("input_event", this, nameof(OnAreaInputEvent));
+			area.Connect("area_entered", this, nameof(Collision_DC));
+		}
 		EmitSignal(nameof(ReadySignal));
 	}
 
@@ -174,12 +198,12 @@ public class MapGen : GridMap
 				{
 					GD.Print(click_position);
 					
-					pos1 = click_position/3;
+					pos1 = click_position/cell_size;
 				}
 				else
 				{
 					//GD.Print(click_position);
-					pos2 = click_position/3;
+					pos2 = click_position/cell_size;
 					foreach (int x in Enumerable.Range(0, (int) Math.Abs(pos2.x-pos1.x)+1))
 					{
 						foreach (int z in Enumerable.Range(0, (int)Math.Abs(pos2.z-pos1.z)+1))
@@ -188,16 +212,16 @@ public class MapGen : GridMap
 							if (pos1.x < pos2.x)
 							{
 								if (pos1.z < pos2.z)
-									SetCellItem((int)(x+pos1.x), 0, (int)(z+pos1.z), 7);
+									SetCellItem((int)(x+pos1.x), (int)pos1.y, (int)(z+pos1.z), 26);
 								else
-									SetCellItem((int)(x+pos1.x), 0, (int)(z+pos2.z), 7);
+									SetCellItem((int)(x+pos1.x), (int)pos1.y, (int)(z+pos2.z), 26);
 							}
 							else
 							{
 								if (pos1.z < pos2.z)
-									SetCellItem((int)(x+pos2.x), 0, (int)(z+pos1.z), 7);
+									SetCellItem((int)(x+pos2.x), (int)pos1.y, (int)(z+pos1.z), 26);
 								else
-									SetCellItem((int)(x+pos2.x), 0, (int)(z+pos2.z), 7);
+									SetCellItem((int)(x+pos2.x), (int)pos1.y, (int)(z+pos2.z), 26);
 							}
 						}
 					}
@@ -208,19 +232,7 @@ public class MapGen : GridMap
 			} 
 		}
 	}
-
-	public void ClickedSomething(Camera camera, InputEvent @event, Vector3 click_position, Vector3 click_normal, int shape_idx)
-	{
-		if (@event is InputEventMouseButton)
-		{
-			var mouse_event = (InputEventMouseButton) @event;
-			if (mouse_event.ButtonIndex == (int) ButtonList.Left)
-			{
-				if (mouse_event.IsPressed())
-				{
-					GD.Print(click_position);
-				}
-			}
-		}
+	private void Collision_DC(Area area){
+		GD.Print(area);
 	}
 }

@@ -57,6 +57,11 @@ camera_amble={
  ]
 }
 
+[layer_names]
+
+3d_render/layer_20="Map"
+3d_physics/layer_20="Map"
+
 [rendering]
 
 threads/thread_model=2
