@@ -82,16 +82,16 @@ public class MapGen : GridMap
 
 	[Remote]
 	private void GetSimplexAttributes(){
-		RpcId(GetTree().GetRpcSenderId(), "SetSimplexAttributes", open_simplex_new.Seed, open_simplex_new.Octaves);
+		RpcId(GetTree().GetRpcSenderId(), nameof(SetSimplexAttributes), new object[] {open_simplex_new.Seed, open_simplex_new.Octaves});
 	}
 
 	[Remote]
-	private void SetSimplexAttributes(int seed, int octaves, float period, float lacunarity, float persistence){
-		open_simplex_new.Seed = seed;
-		open_simplex_new.Octaves = octaves;
-		open_simplex_new.Period = period;
-		open_simplex_new.Lacunarity = lacunarity;
-		open_simplex_new.Persistence = persistence;
+	private void SetSimplexAttributes(object[] attributes){
+		open_simplex_new.Seed = (int)attributes[0];
+		open_simplex_new.Octaves = (int)attributes[1];
+		open_simplex_new.Period = (float)attributes[2];
+		open_simplex_new.Lacunarity = (float)attributes[3];
+		open_simplex_new.Persistence = (float)attributes[4];
 	}
 
 	private void GenerateCollisionArea()
