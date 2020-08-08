@@ -8,6 +8,13 @@ public class MapGen : GridMap
 {
 	[Export(PropertyHint.Range, "0,15,or_greater")]
 	private int chunk_number = 5;
+	
+	[Export(PropertyHint.Range, "-1,1,0.01")]
+	private float Hill_Fatness = -0.5f;
+	
+	[Export(PropertyHint.Range, "1,100,or_greater")]
+	private int Hill_Tallness = 100;
+	
 	int chunk_loader = 32;
 	private Vector3 cell_size = new Vector3(3f,1.5f,3f);
 	int width;
@@ -45,7 +52,7 @@ public class MapGen : GridMap
 		open_simplex_new.Octaves = randomizer.RandiRange(1, 9);
 		open_simplex_new.Period = randomizer.RandfRange(10, 70);
 		open_simplex_new.Lacunarity = randomizer.RandfRange(0.1f, 4);
-		open_simplex_new.Persistence = randomizer.RandfRange(0, 1); // 0 - 0.5
+		open_simplex_new.Persistence = randomizer.RandfRange(0, 0); // 0 - 0.5
 		mutex = new System.Threading.Mutex();
 
 
@@ -134,38 +141,24 @@ public class MapGen : GridMap
 
 
 	private int[] GetTileIndex(float noise_sample)
-	{
-		switch (noise_sample)
-		{
-			case float f when f < -0.5f: // water
-				return new int[] {1, 0}; // index    
-
-			case float f when f < 0f: // sand
-				return new int[] {2, 0}; // index
-
-			case float f when f < 0.4f: // grass
-				return new int[] {36, 0}; // index
-
-			case float f when f < 0.5f: // hill
-				return new int[] {27, 0}; // index 
-
-			case float f when f < 0.6f: // hill
-				return new int[] {27, 1}; // index 
-
-			case float f when f < 0.7f: // hill
-				return new int[] {27, 2}; // index 
-
-			case float f when f < 0.8f: // hill
-				return new int[] {27, 3}; // index 
-
-			case float f when f < 0.9f: // hill
-				return new int[] {27, 4}; // index
- 
-			case float f when f < 1f: // hill
-				return new int[] {27, 5}; // index 
-
-			default:
-				return new int[] {0, 0};
+	{	
+		float ground_level = (Math.Abs((Hill_Fatness)+1)/3);
+		float diff = 1/((Math.Abs(Hill_Fatness-1))/Hill_Tallness);
+		float f = noise_sample;
+		if (f>=Hill_Fatness){
+			return new int[] {27, (int)(Math.Abs(Hill_Fatness-f)*diff)};
+		}	
+		else{
+			switch (f){
+				case float noice when noice < ((ground_level*1)-1): // water
+					return new int[] {1, 0}; // index   
+				case float noice when noice < ((ground_level*2)-1): // sand
+					return new int[] {2, 0}; // index  
+				case float noice when noice < ((ground_level*3)-1): // grass
+					return new int[] {36, 0}; // index  
+				default:
+					return new int[] {0, 0};
+			}
 		}
 	}
 
