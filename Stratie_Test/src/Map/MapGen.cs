@@ -6,14 +6,17 @@ using System.Collections.Generic;
 
 public class MapGen : GridMap
 {
-	[Export(PropertyHint.Range, "0,15,or_greater")]
+	[Export(PropertyHint.Range, "1,15,or_greater")]
 	private int chunk_number = 5;
 	
 	[Export(PropertyHint.Range, "-1,1,0.01")]
-	private float Hill_Fatness = -0.5f;
+	private float Hill_Fatness = 0f;
 	
 	[Export(PropertyHint.Range, "1,100,or_greater")]
 	private int Hill_Tallness = 100;
+
+	[Export(PropertyHint.Range, "-1,1,0.01")]
+	private float tree_spread = -0.5f;
 	int chunk_loader = 32;
 	private Vector3 cell_size = new Vector3(3f,1.5f,3f);
 	int width;
@@ -106,8 +109,12 @@ public class MapGen : GridMap
 			foreach (int z in Enumerable.Range((int)from.z, diff_z))
 			{
 				int[] index_height = GetTileIndex(open_simplex_new.GetNoise3d(x, 0, z));
+				bool isTree = (open_simplex_new.GetNoise3d(x, 100, z)) <= tree_spread;
 				mutex.WaitOne();
-				SetCellItem(x, index_height[1], z, index_height[0], 10);
+				SetCellItem(x, index_height[1], z, index_height[0]);
+				if (isTree){
+					SetCellItem(x, index_height[1]+1, z, 20);
+				}
 				mutex.ReleaseMutex();
 			}
 		}
@@ -160,7 +167,6 @@ public class MapGen : GridMap
 			}
 		}
 	}
-
 
 	public void OnAreaInputEvent(Camera camera, InputEvent @event, Vector3 click_position, Vector3 click_normal, int shape_idx)
 	{
