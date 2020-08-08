@@ -38,12 +38,27 @@ public class MapGen : GridMap
 		width = chunk_number*chunk_loader*(int)CellSize.x;
 		length = width;
 		height = 1f;
-
+		open_simplex_new = new OpenSimplexNoise();
 		CellSize = cell_size;
+
+		if (GetTree().NetworkPeer != null && GetTree().NetworkPeer.GetConnectionStatus() == NetworkedMultiplayerPeer.ConnectionStatus.Connected && !IsNetworkMaster()){
+			RpcId(1, "GetSimplexAttributes");
+			
+			mutex = new System.Threading.Mutex();
+
+			GenerateWorld();
+
+			GetNode("Area").Connect("input_event", this, nameof(OnAreaInputEvent));
+			SetCollisionLayerBit(20, true);
+
+			GenerateCollisionArea();
+			playerlevel = ((PlayerLevel) GetNode("../PlayerLevel"));
+			playerlevel.init(cell_size, width, length);
+			return;
+		}
 
 		RandomNumberGenerator randomizer = new RandomNumberGenerator();
 		randomizer.Randomize();
-		open_simplex_new = new OpenSimplexNoise();
 		open_simplex_new.Seed = (int) randomizer.Randi();
 		//open_symplex_new.octaves = 4
 		//open_symplex_new.period = 256
@@ -63,6 +78,20 @@ public class MapGen : GridMap
 		GenerateCollisionArea();
 		playerlevel = ((PlayerLevel) GetNode("../PlayerLevel"));
 		playerlevel.init(cell_size, width, length);
+	}
+
+	[Remote]
+	private void GetSimplexAttributes(){
+		RpcId(GetTree().GetRpcSenderId(), "SetSimplexAttributes", open_simplex_new.Seed, open_simplex_new.Octaves);
+	}
+
+	[Remote]
+	private void SetSimplexAttributes(int seed, int octaves, float period, float lacunarity, float persistence){
+		open_simplex_new.Seed = seed;
+		open_simplex_new.Octaves = octaves;
+		open_simplex_new.Period = period;
+		open_simplex_new.Lacunarity = lacunarity;
+		open_simplex_new.Persistence = persistence;
 	}
 
 	private void GenerateCollisionArea()
