@@ -8,6 +8,12 @@ public class MapGen : GridMap
 {
 	[Export(PropertyHint.Range, "0,15,or_greater")]
 	private int chunk_number = 5;
+	
+	[Export(PropertyHint.Range, "-1,1,0.01")]
+	private float Hill_Fatness = -0.5f;
+	
+	[Export(PropertyHint.Range, "1,100,or_greater")]
+	private int Hill_Tallness = 100;
 	int chunk_loader = 32;
 	private Vector3 cell_size = new Vector3(3f,1.5f,3f);
 	int width;
@@ -30,8 +36,6 @@ public class MapGen : GridMap
 		length = width;
 		height = 1f;
 
-		Godot.Collections.Array test = GetMeshes();
-
 		CellSize = cell_size;
 
 		RandomNumberGenerator randomizer = new RandomNumberGenerator();
@@ -45,12 +49,14 @@ public class MapGen : GridMap
 		open_simplex_new.Octaves = randomizer.RandiRange(1, 9);
 		open_simplex_new.Period = randomizer.RandfRange(10, 70);
 		open_simplex_new.Lacunarity = randomizer.RandfRange(0.1f, 4);
-		open_simplex_new.Persistence = randomizer.RandfRange(0, 1); // 0 - 0.5
+		open_simplex_new.Persistence = randomizer.RandfRange(0, 0); // 0 - 0.5
 		mutex = new System.Threading.Mutex();
 
-
 		GenerateWorld();
+
 		GetNode("Area").Connect("input_event", this, nameof(OnAreaInputEvent));
+		SetCollisionLayerBit(20, true);
+
 		GenerateCollisionArea();
 		playerlevel = ((PlayerLevel) GetNode("../PlayerLevel"));
 		playerlevel.init(cell_size, width, length);
@@ -134,38 +140,24 @@ public class MapGen : GridMap
 
 
 	private int[] GetTileIndex(float noise_sample)
-	{
-		switch (noise_sample)
-		{
-			case float f when f < -0.5f: // water
-				return new int[] {1, 0}; // index    
-
-			case float f when f < 0f: // sand
-				return new int[] {2, 0}; // index
-
-			case float f when f < 0.4f: // grass
-				return new int[] {36, 0}; // index
-
-			case float f when f < 0.5f: // hill
-				return new int[] {27, 0}; // index 
-
-			case float f when f < 0.6f: // hill
-				return new int[] {27, 1}; // index 
-
-			case float f when f < 0.7f: // hill
-				return new int[] {27, 2}; // index 
-
-			case float f when f < 0.8f: // hill
-				return new int[] {27, 3}; // index 
-
-			case float f when f < 0.9f: // hill
-				return new int[] {27, 4}; // index
- 
-			case float f when f < 1f: // hill
-				return new int[] {27, 5}; // index 
-
-			default:
-				return new int[] {0, 0};
+	{	
+		float ground_level = (Math.Abs((Hill_Fatness)+1)/3);
+		float diff = 1/((Math.Abs(Hill_Fatness-1))/Hill_Tallness);
+		float f = noise_sample;
+		if (f>=Hill_Fatness){
+			return new int[] {27, (int)(Math.Abs(Hill_Fatness-f)*diff)};
+		}	
+		else{
+			switch (f){
+				case float noice when noice < ((ground_level*1)-1): // water
+					return new int[] {1, 0}; // index   
+				case float noice when noice < ((ground_level*2)-1): // sand
+					return new int[] {2, 0}; // index  
+				case float noice when noice < ((ground_level*3)-1): // grass
+					return new int[] {36, 0}; // index  
+				default:
+					return new int[] {0, 0};
+			}
 		}
 	}
 
@@ -181,30 +173,28 @@ public class MapGen : GridMap
 				{
 					GD.Print(click_position);
 					
-					pos1 = click_position/3;
+					pos1 = click_position/cell_size;
 				}
 				else
 				{
-					//GD.Print(click_position);
-					pos2 = click_position/3;
+					pos2 = click_position/cell_size;
 					foreach (int x in Enumerable.Range(0, (int) Math.Abs(pos2.x-pos1.x)+1))
 					{
 						foreach (int z in Enumerable.Range(0, (int)Math.Abs(pos2.z-pos1.z)+1))
 						{
-							//GetCellItem(x + pos1.x,0,z + pos1.z);
 							if (pos1.x < pos2.x)
 							{
 								if (pos1.z < pos2.z)
-									SetCellItem((int)(x+pos1.x), 0, (int)(z+pos1.z), 7);
+									SetCellItem((int)(x+pos1.x), (int)pos1.y, (int)(z+pos1.z), 26);
 								else
-									SetCellItem((int)(x+pos1.x), 0, (int)(z+pos2.z), 7);
+									SetCellItem((int)(x+pos1.x), (int)pos1.y, (int)(z+pos2.z), 26);
 							}
 							else
 							{
 								if (pos1.z < pos2.z)
-									SetCellItem((int)(x+pos2.x), 0, (int)(z+pos1.z), 7);
+									SetCellItem((int)(x+pos2.x), (int)pos1.y, (int)(z+pos1.z), 26);
 								else
-									SetCellItem((int)(x+pos2.x), 0, (int)(z+pos2.z), 7);
+									SetCellItem((int)(x+pos2.x), (int)pos1.y, (int)(z+pos2.z), 26);
 							}
 						}
 					}
@@ -215,18 +205,39 @@ public class MapGen : GridMap
 			} 
 		}
 	}
+	private void Collision_DC(Area area){
+		GD.Print(area);
+	}
 
-	public void ClickedSomething(Camera camera, InputEvent @event, Vector3 click_position, Vector3 click_normal, int shape_idx)
+	private const float rayLength = 1000;
+
+	int placement_height_offset = 0;
+	public override void _Input(InputEvent @event)
 	{
-		if (@event is InputEventMouseButton)
+		if (@event is InputEventMouseButton eventMouseButton && eventMouseButton.Pressed && eventMouseButton.ButtonIndex == 1)
 		{
-			var mouse_event = (InputEventMouseButton) @event;
-			if (mouse_event.ButtonIndex == (int) ButtonList.Left)
-			{
-				if (mouse_event.IsPressed())
-				{
-					GD.Print(click_position);
-				}
+	   	 	var camera = (Camera)GetNode("../Spatial/Camera");
+			var from = camera.ProjectRayOrigin(eventMouseButton.Position);
+			var to = from + camera.ProjectRayNormal(eventMouseButton.Position) * rayLength;
+			var spaceState = GetWorld().DirectSpaceState;
+			var res = spaceState.IntersectRay(from, to, null, 0b10000000000000000000, true, true);
+			
+			if	(res.Contains("position")){
+				GD.Print(res["position"], res["collider"]);
+				Vector3 pos = (Vector3) res["position"];
+				pos /= cell_size;
+				SetCellItem((int)pos.x, (int)pos.y + placement_height_offset, (int)pos.z, 26);
+			}
+		}
+	}
+
+	public override void _UnhandledInput(InputEvent @event){
+		if (@event is InputEventKey nnn && nnn.Pressed){
+			if (nnn.Scancode == (int) KeyList.E){
+				placement_height_offset += 1;
+			}
+			else if (nnn.Scancode == (int) KeyList.Q){
+				placement_height_offset -= 1;
 			}
 		}
 	}
