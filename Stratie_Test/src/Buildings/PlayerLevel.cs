@@ -49,20 +49,20 @@ public class PlayerLevel : GridMap {
         shape.Scale = new Vector3(cell_size.x/2, 1, cell_size.z/2);
         arealevel.AddChild(shape);
 
-        /*
+        
         //Visual Representation
         MeshInstance mi = new MeshInstance();
         mi.Mesh = new CubeMesh();
         mi.Translation = new Vector3(m_x*cell_size.x + cell_size.x/2, m_y*cell_size.y + offset_y, m_z*cell_size.z + cell_size.z/2);
         mi.Scale = new Vector3(cell_size.x/2, 1, cell_size.z/2);
         arealevel.AddChild(mi);
-        */
+        
     }
 
     public void OnAreaInputEvent(Camera camera, InputEvent @event, Vector3 click_position, Vector3 click_normal, int shape_idx) {
         if (@event is InputEventMouseButton) {
             var mouse_event = (InputEventMouseButton) @event;
-            if (mouse_event.ButtonIndex == (int) ButtonList.Left) {
+            if (mouse_event.ButtonIndex == (int) ButtonList.Right) {
                 if (mouse_event.IsPressed()) {
                     setGameInterface(true);
                 }
