@@ -21,7 +21,7 @@ __meta__ = {
 "_editor_clip_": 0,
 "_editor_floor_": Vector3( 0, 0, 0 )
 }
-chunk_number = 10
+Hill_Fatness = 0.02
 
 [node name="Area" type="Area" parent="GridMap"]
 
