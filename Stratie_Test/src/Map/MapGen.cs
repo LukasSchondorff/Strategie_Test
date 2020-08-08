@@ -165,7 +165,7 @@ public class MapGen : GridMap
 		}
 	}
 
-	[Remote]
+	[RemoteSync]
 	private void SetCellItem(int x, int y, int z, int itemIndex){
 		base.SetCellItem(x,y,z,itemIndex);
 	}
@@ -193,20 +193,16 @@ public class MapGen : GridMap
 							if (pos1.x < pos2.x)
 							{
 								if (pos1.z < pos2.z){
-									base.SetCellItem((int)(x+pos1.x), (int)pos1.y, (int)(z+pos1.z), 26);
 									SetCellItem((int)(x+pos1.x), (int)pos1.y, (int)(z+pos1.z), 26);
 								}else{
-									base.SetCellItem((int)(x+pos1.x), (int)pos1.y, (int)(z+pos1.z), 26);
 									SetCellItem((int)(x+pos1.x), (int)pos1.y, (int)(z+pos2.z), 26);
 								}
 							}
 							else
 							{
 								if (pos1.z < pos2.z){
-									base.SetCellItem((int)(x+pos1.x), (int)pos1.y, (int)(z+pos1.z), 26);
 									SetCellItem((int)(x+pos2.x), (int)pos1.y, (int)(z+pos1.z), 26);
 								}else{
-									base.SetCellItem((int)(x+pos1.x), (int)pos1.y, (int)(z+pos1.z), 26);
 									SetCellItem((int)(x+pos2.x), (int)pos1.y, (int)(z+pos2.z), 26);
 								}	
 							}
@@ -237,8 +233,11 @@ public class MapGen : GridMap
 				GD.Print(res["position"], res["collider"]);
 				Vector3 pos = (Vector3) res["position"];
 				pos /= cell_size;
-				base.SetCellItem((int)pos.x, (int)pos.y + placement_height_offset, (int)pos.z, 26);
-				SetCellItem((int)pos.x, (int)pos.y + placement_height_offset, (int)pos.z, 26);
+				if (GetTree().NetworkPeer != null && GetTree().NetworkPeer.GetConnectionStatus() == NetworkedMultiplayerPeer.ConnectionStatus.Connected){
+					Rpc("SetCellItem", new object[] {(int)pos.x, (int)pos.y + placement_height_offset, (int)pos.z, 26});
+				} else {
+					SetCellItem((int)pos.x, (int)pos.y + placement_height_offset, (int)pos.z, 26);
+				}
 			}
 		}
 	}
