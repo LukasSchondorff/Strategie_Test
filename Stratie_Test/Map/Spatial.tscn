@@ -1,4 +1,4 @@
-[gd_scene load_steps=7 format=2]
+[gd_scene load_steps=8 format=2]
 
 [ext_resource path="res://src/Camera.gd" type="Script" id=1]
 [ext_resource path="res://src/Map/MapGen.cs" type="Script" id=2]
@@ -6,14 +6,16 @@
 [ext_resource path="res://src/Units/UnitBase.cs" type="Script" id=4]
 [ext_resource path="res://src/Buildings/PlayerLevel.cs" type="Script" id=5]
 [ext_resource path="res://UI/GameUI/Interface.tscn" type="PackedScene" id=6]
+[ext_resource path="res://Assets/Map/Libs/final_with_collision.meshlib" type="MeshLibrary" id=7]
 
 [node name="Spatial" type="Spatial"]
 
 [node name="GridMap" type="GridMap" parent="."]
-mesh_library = ExtResource( 3 )
+mesh_library = ExtResource( 7 )
 cell_size = Vector3( 3, 1.5, 3 )
 cell_octant_size = 16
 cell_center_y = false
+collision_layer = 524288
 collision_mask = 0
 data = {
 "cells": PoolIntArray(  )
@@ -23,9 +25,8 @@ __meta__ = {
 "_editor_clip_": 0,
 "_editor_floor_": Vector3( 0, 0, 0 )
 }
-chunk_number = 7
-Hill_Fatness = 0.76
-Hill_Tallness = 20
+chunk_number = 10
+Hill_Tallness = 57
 
 [node name="Area" type="Area" parent="GridMap"]
 

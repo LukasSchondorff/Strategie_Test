@@ -14,8 +14,6 @@ public class MapGen : GridMap
 	
 	[Export(PropertyHint.Range, "1,100,or_greater")]
 	private int Hill_Tallness = 100;
-	
-	private List <Area> arealevel;
 	int chunk_loader = 32;
 	private Vector3 cell_size = new Vector3(3f,1.5f,3f);
 	int width;
@@ -38,15 +36,6 @@ public class MapGen : GridMap
 		length = width;
 		height = 1f;
 
-		arealevel = new List <Area>();
-
-			
-			
-			
-
-
-		Godot.Collections.Array test = GetMeshes();
-
 		CellSize = cell_size;
 
 		RandomNumberGenerator randomizer = new RandomNumberGenerator();
@@ -63,9 +52,11 @@ public class MapGen : GridMap
 		open_simplex_new.Persistence = randomizer.RandfRange(0, 0); // 0 - 0.5
 		mutex = new System.Threading.Mutex();
 
-
 		GenerateWorld();
+
 		GetNode("Area").Connect("input_event", this, nameof(OnAreaInputEvent));
+		SetCollisionLayerBit(20, true);
+
 		GenerateCollisionArea();
 		playerlevel = ((PlayerLevel) GetNode("../PlayerLevel"));
 		playerlevel.init(cell_size, width, length);
@@ -117,18 +108,7 @@ public class MapGen : GridMap
 				int[] index_height = GetTileIndex(open_simplex_new.GetNoise3d(x, 0, z));
 				mutex.WaitOne();
 				SetCellItem(x, index_height[1], z, index_height[0], 10);
-				Area temp_area = new Area();
-				CollisionShape shape = new CollisionShape();
-				shape.Shape = new BoxShape();
-				shape.Translation = new Vector3(x*cell_size.x + cell_size.x/2, index_height[1]*cell_size.y, z*cell_size.z + cell_size.z/2);
-				shape.Scale = new Vector3(cell_size.x/2, 1, cell_size.z/2);temp_area.Monitoring = false;
-				temp_area.CollisionMask = 0;
-				temp_area.CollisionLayer = 0b10000000000000000000;
-				temp_area.AddChild(shape);
-				arealevel.Add(temp_area);
 				mutex.ReleaseMutex();
-				
-				
 			}
 		}
 	}
@@ -155,11 +135,6 @@ public class MapGen : GridMap
 		foreach (var threaddy in thread)
 			threaddy.Join();
 
-		foreach (Area area in arealevel){
-			AddChild(area);
-			area.Connect("input_event", this, nameof(OnAreaInputEvent));
-			area.Connect("area_entered", this, nameof(Collision_DC));
-		}
 		EmitSignal(nameof(ReadySignal));
 	}
 
@@ -202,13 +177,11 @@ public class MapGen : GridMap
 				}
 				else
 				{
-					//GD.Print(click_position);
 					pos2 = click_position/cell_size;
 					foreach (int x in Enumerable.Range(0, (int) Math.Abs(pos2.x-pos1.x)+1))
 					{
 						foreach (int z in Enumerable.Range(0, (int)Math.Abs(pos2.z-pos1.z)+1))
 						{
-							//GetCellItem(x + pos1.x,0,z + pos1.z);
 							if (pos1.x < pos2.x)
 							{
 								if (pos1.z < pos2.z)
@@ -234,5 +207,38 @@ public class MapGen : GridMap
 	}
 	private void Collision_DC(Area area){
 		GD.Print(area);
+	}
+
+	private const float rayLength = 1000;
+
+	int placement_height_offset = 0;
+	public override void _Input(InputEvent @event)
+	{
+		if (@event is InputEventMouseButton eventMouseButton && eventMouseButton.Pressed && eventMouseButton.ButtonIndex == 1)
+		{
+	   	 	var camera = (Camera)GetNode("../Spatial/Camera");
+			var from = camera.ProjectRayOrigin(eventMouseButton.Position);
+			var to = from + camera.ProjectRayNormal(eventMouseButton.Position) * rayLength;
+			var spaceState = GetWorld().DirectSpaceState;
+			var res = spaceState.IntersectRay(from, to, null, 0b10000000000000000000, true, true);
+			
+			if	(res.Contains("position")){
+				GD.Print(res["position"], res["collider"]);
+				Vector3 pos = (Vector3) res["position"];
+				pos /= cell_size;
+				SetCellItem((int)pos.x, (int)pos.y + placement_height_offset, (int)pos.z, 26);
+			}
+		}
+	}
+
+	public override void _UnhandledInput(InputEvent @event){
+		if (@event is InputEventKey nnn && nnn.Pressed){
+			if (nnn.Scancode == (int) KeyList.E){
+				placement_height_offset += 1;
+			}
+			else if (nnn.Scancode == (int) KeyList.Q){
+				placement_height_offset -= 1;
+			}
+		}
 	}
 }
