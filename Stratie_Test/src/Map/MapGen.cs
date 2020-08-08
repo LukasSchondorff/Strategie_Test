@@ -82,7 +82,11 @@ public class MapGen : GridMap
 
 	[Remote]
 	private void GetAttributes(){
-		RpcId(GetTree().GetRpcSenderId(), nameof(SetAttributes), new object[] {open_simplex_new.Seed, open_simplex_new.Octaves, open_simplex_new.Period, open_simplex_new.Lacunarity, open_simplex_new.Persistence, width, height, CellSize});
+		SetClientAttributes(GetTree().GetRpcSenderId());
+	}
+
+	private void SetClientAttributes(int clientId){
+		RpcId(clientId, nameof(SetAttributes), new object[] {open_simplex_new.Seed, open_simplex_new.Octaves, open_simplex_new.Period, open_simplex_new.Lacunarity, open_simplex_new.Persistence, width, height, CellSize});
 	}
 
 	[Remote]
