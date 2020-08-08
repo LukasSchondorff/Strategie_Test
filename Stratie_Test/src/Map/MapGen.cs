@@ -42,7 +42,7 @@ public class MapGen : GridMap
 		CellSize = cell_size;
 
 		if (GetTree().NetworkPeer != null && GetTree().NetworkPeer.GetConnectionStatus() == NetworkedMultiplayerPeer.ConnectionStatus.Connected && !IsNetworkMaster()){
-			RpcId(1, "GetSimplexAttributes");
+			RpcId(1, nameof(GetAttributes));
 			
 			mutex = new System.Threading.Mutex();
 
@@ -81,17 +81,22 @@ public class MapGen : GridMap
 	}
 
 	[Remote]
-	private void GetSimplexAttributes(){
-		RpcId(GetTree().GetRpcSenderId(), nameof(SetSimplexAttributes), new object[] {open_simplex_new.Seed, open_simplex_new.Octaves});
+	private void GetAttributes(){
+		RpcId(GetTree().GetRpcSenderId(), nameof(SetAttributes), new object[] {open_simplex_new.Seed, open_simplex_new.Octaves, open_simplex_new.Period, open_simplex_new.Lacunarity, open_simplex_new.Persistence, width, height, CellSize});
 	}
 
 	[Remote]
-	private void SetSimplexAttributes(object[] attributes){
+	private void SetAttributes(object[] attributes){
 		open_simplex_new.Seed = (int)attributes[0];
 		open_simplex_new.Octaves = (int)attributes[1];
 		open_simplex_new.Period = (float)attributes[2];
 		open_simplex_new.Lacunarity = (float)attributes[3];
 		open_simplex_new.Persistence = (float)attributes[4];
+		
+		width = (int) attributes[5];
+		length = width;
+		height = (float)attributes[6];
+		CellSize = (Vector3)attributes[7];
 	}
 
 	private void GenerateCollisionArea()
