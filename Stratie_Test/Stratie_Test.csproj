@@ -61,7 +61,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="src\Buildings\BuildingBase.cs" />
+    <Compile Include="src\Buildings\Buildings\BuildingBase.cs" />
+    <Compile Include="src\Buildings\Buildings\TownCenter.cs" />
     <Compile Include="src\Buildings\PlayerLevel.cs" />
     <Compile Include="src\Multiplayer\Main.cs" />
     <Compile Include="src\Multiplayer\Chat.cs" />
