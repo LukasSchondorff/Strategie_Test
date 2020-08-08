@@ -44,6 +44,19 @@ public class MapGen : GridMap
 		if (GetTree().NetworkPeer != null && GetTree().NetworkPeer.GetConnectionStatus() == NetworkedMultiplayerPeer.ConnectionStatus.Connected && !IsNetworkMaster()){
 			RpcId(1, nameof(GetAttributes));
 			
+			var peer = GetTree().NetworkPeer;
+			List<object> attributes = new List<object>();
+
+			for (int i = 0; i < peer.GetAvailablePacketCount(); i++){
+				try{
+					attributes.Add(BitConverter.ToInt16(peer.GetPacket(), 0));
+				} catch (System.ArgumentException e){
+					GD.Print(e);
+				}
+			}
+
+			SetAttributes(attributes.ToArray());
+
 			mutex = new System.Threading.Mutex();
 
 			GenerateWorld();
@@ -80,16 +93,26 @@ public class MapGen : GridMap
 		playerlevel.init(cell_size, width, length);
 	}
 
-	[Remote]
+	[Master]
 	private void GetAttributes(){
-		SetClientAttributes(GetTree().GetRpcSenderId());
+		object[] attributes = new object[8];
+		attributes[0] = open_simplex_new.Seed;
+		attributes[1] = open_simplex_new.Octaves;
+		attributes[2] = open_simplex_new.Period;
+		attributes[3] = open_simplex_new.Lacunarity;
+		attributes[4] = open_simplex_new.Persistence;
+		
+		attributes[5] = width;
+		attributes[6] = height;
+		attributes[7] = CellSize;
+
+		var peer = GetTree().NetworkPeer;
+		foreach (dynamic attr in attributes) {
+			peer.PutPacket(BitConverter.GetBytes(attr));
+		}
+		//RpcId(GetTree().GetRpcSenderId(), nameof(SetAttributes), new object[] {open_simplex_new.Seed, open_simplex_new.Octaves, open_simplex_new.Period, open_simplex_new.Lacunarity, open_simplex_new.Persistence, width, height, CellSize});
 	}
 
-	private void SetClientAttributes(int clientId){
-		RpcId(clientId, nameof(SetAttributes), new object[] {open_simplex_new.Seed, open_simplex_new.Octaves, open_simplex_new.Period, open_simplex_new.Lacunarity, open_simplex_new.Persistence, width, height, CellSize});
-	}
-
-	[Remote]
 	private void SetAttributes(object[] attributes){
 		open_simplex_new.Seed = (int)attributes[0];
 		open_simplex_new.Octaves = (int)attributes[1];
