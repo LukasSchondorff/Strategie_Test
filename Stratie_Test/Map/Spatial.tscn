@@ -20,9 +20,9 @@ data = {
 script = ExtResource( 2 )
 __meta__ = {
 "_editor_clip_": 0,
-"_editor_floor_": Vector3( 0, 2, 0 )
+"_editor_floor_": Vector3( 0, 0, 0 )
 }
-chunk_number = 2
+chunk_number = 10
 
 [node name="Area" type="Area" parent="GridMap"]
 

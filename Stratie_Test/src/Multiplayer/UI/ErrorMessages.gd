@@ -8,22 +8,26 @@ func _ready() -> void:
 
 func _on_Error(message: String) -> void:
 	bbcode_text = "[color=red]" + message + "[/color]"
-	get_node("../Host").disabled = false
-	get_node("../Join").disabled = false
-	get_node("../Leave").disabled = true
-	get_node("../Name").editable = true
-	get_node("../Address").editable = true
-	get_node("../../MultiplayerChat/Lower/Send").disabled = true
-	get_node("../../MultiplayerChat/Lower/MessageText").editable = false
+	lobby_status_changed(false)
 
 func _on_Success(message: String) -> void:
 	bbcode_text = "[color=green]" + message + "[/color]"
 	if message == "Successfully connected to server":
-		get_node("../Host").disabled = true
-		get_node("../Leave").disabled = false
-		get_node("../Join").disabled = true
-		get_node("../Name").editable = false
-		get_node("../Address").editable = false
-		get_node("../../MultiplayerChat/Lower/Send").disabled = false
-		get_node("../../MultiplayerChat/Lower/MessageText").editable = true
+		lobby_status_changed(true)
 		get_node("../../MultiplayerChat/Lower/MessageText").grab_focus()
+	if message == "Disconnected!":
+		lobby_status_changed(false)
+
+func lobby_status_changed(inLobby: bool) -> void:
+	for n in get_tree().get_nodes_in_group("InLobby"):
+		if n is Button:
+			n.disabled = not inLobby;
+		else:
+			n.editable = inLobby;
+	for n in get_tree().get_nodes_in_group("BeforeLobby"):
+		if n is Button:
+			n.disabled = inLobby;
+		else:
+			n.editable = not inLobby;
+
+

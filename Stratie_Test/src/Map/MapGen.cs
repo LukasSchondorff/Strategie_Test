@@ -45,7 +45,7 @@ public class MapGen : GridMap
 		open_simplex_new.Octaves = randomizer.RandiRange(1, 9);
 		open_simplex_new.Period = randomizer.RandfRange(10, 70);
 		open_simplex_new.Lacunarity = randomizer.RandfRange(0.1f, 4);
-		open_simplex_new.Persistence = randomizer.RandfRange(0, 1);
+		open_simplex_new.Persistence = randomizer.RandfRange(0, 1); // 0 - 0.5
 		mutex = new System.Threading.Mutex();
 
 
@@ -99,9 +99,9 @@ public class MapGen : GridMap
 		{
 			foreach (int z in Enumerable.Range((int)from.z, diff_z))
 			{
-				int index = GetTileIndex(open_simplex_new.GetNoise3d(x, 0, z));
+				int[] index_height = GetTileIndex(open_simplex_new.GetNoise3d(x, 0, z));
 				mutex.WaitOne();
-				SetCellItem(x, 0, z, index, 10);
+				SetCellItem(x, index_height[1], z, index_height[0], 10);
 				mutex.ReleaseMutex();
 			}
 		}
@@ -133,24 +133,39 @@ public class MapGen : GridMap
 	}
 
 
-	private int GetTileIndex(float noise_sample)
+	private int[] GetTileIndex(float noise_sample)
 	{
 		switch (noise_sample)
 		{
-			case float f when f < -0.5f:
-				return 1; // index
+			case float f when f < -0.5f: // water
+				return new int[] {1, 0}; // index    
 
-			case float f when f < 0f: // normal ground
-				return 36; // index
+			case float f when f < 0f: // sand
+				return new int[] {2, 0}; // index
 
-			case float f when f < 0.5f: //sand
-				return 2; // index
+			case float f when f < 0.4f: // grass
+				return new int[] {36, 0}; // index
 
-			case float f when f < 1f:
-				return 1; // index
+			case float f when f < 0.5f: // hill
+				return new int[] {27, 0}; // index 
+
+			case float f when f < 0.6f: // hill
+				return new int[] {27, 1}; // index 
+
+			case float f when f < 0.7f: // hill
+				return new int[] {27, 2}; // index 
+
+			case float f when f < 0.8f: // hill
+				return new int[] {27, 3}; // index 
+
+			case float f when f < 0.9f: // hill
+				return new int[] {27, 4}; // index
+ 
+			case float f when f < 1f: // hill
+				return new int[] {27, 5}; // index 
 
 			default:
-				return 0;
+				return new int[] {0, 0};
 		}
 	}
 
@@ -165,7 +180,7 @@ public class MapGen : GridMap
 				if (mouse_event.IsPressed())
 				{
 					GD.Print(click_position);
-					playerlevel.CheckSpace(click_position);
+					
 					pos1 = click_position/3;
 				}
 				else
@@ -180,26 +195,24 @@ public class MapGen : GridMap
 							if (pos1.x < pos2.x)
 							{
 								if (pos1.z < pos2.z)
-									SetCellItem((int)(x+pos1.x), 0, (int)(z+pos1.z), 32);
+									SetCellItem((int)(x+pos1.x), 0, (int)(z+pos1.z), 7);
 								else
-									SetCellItem((int)(x+pos1.x), 0, (int)(z+pos2.z), 32);
+									SetCellItem((int)(x+pos1.x), 0, (int)(z+pos2.z), 7);
 							}
 							else
 							{
 								if (pos1.z < pos2.z)
-									SetCellItem((int)(x+pos2.x), 0, (int)(z+pos1.z), 32);
+									SetCellItem((int)(x+pos2.x), 0, (int)(z+pos1.z), 7);
 								else
-									SetCellItem((int)(x+pos2.x), 0, (int)(z+pos2.z), 32);
+									SetCellItem((int)(x+pos2.x), 0, (int)(z+pos2.z), 7);
 							}
 						}
 					}
 				}
 			}
-
-			if (mouse_event.ButtonIndex == (int) ButtonList.Right && mouse_event.IsPressed())
-				SetCellItem((int)(click_position[0]/3), 0, (int)(click_position[2]/3) + 1, 32);
-
-
+			if (mouse_event.ButtonIndex == (int) ButtonList.Right && mouse_event.IsPressed()){
+				playerlevel.CheckSpace(click_position);
+			} 
 		}
 	}
 

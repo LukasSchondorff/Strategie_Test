@@ -19,6 +19,11 @@ config/name="Stratie_Test"
 run/main_scene="res://Scenes/DefaultScene.tscn"
 config/icon="res://icon.png"
 
+[autoload]
+
+Global="*res://src/Global/global.gd"
+Multiplayer_node="*res://src/Multiplayer/Main.cs"
+
 [input]
 
 camera_forwards={
