@@ -65,7 +65,6 @@ public class MapGen : GridMap
 		playerlevel.init(cell_size, width, length);
 	}
 
-
 	private void GenerateCollisionArea()
 	{
 		CollisionShape shape = new CollisionShape();
@@ -86,7 +85,6 @@ public class MapGen : GridMap
 		GetNode("Area").AddChild(mi);
 		*/
 	}
-
 
 	private void GenerateQuadrant(System.Object obj)
 	{
@@ -111,9 +109,9 @@ public class MapGen : GridMap
 				int[] index_height = GetTileIndex(open_simplex_new.GetNoise3d(x, 0, z));
 				bool isTree = (open_simplex_new.GetNoise3d(x, 100, z)) <= tree_spread;
 				mutex.WaitOne();
-				SetCellItem(x, index_height[1], z, index_height[0]);
+				base.SetCellItem(x, index_height[1], z, index_height[0]);
 				if (isTree){
-					SetCellItem(x, index_height[1]+1, z, 20);
+					base.SetCellItem(x, index_height[1]+1, z, 20);
 				}
 				mutex.ReleaseMutex();
 			}
@@ -145,7 +143,6 @@ public class MapGen : GridMap
 		EmitSignal(nameof(ReadySignal));
 	}
 
-
 	private int[] GetTileIndex(float noise_sample)
 	{	
 		float ground_level = (Math.Abs((Hill_Fatness)+1)/3);
@@ -166,6 +163,11 @@ public class MapGen : GridMap
 					return new int[] {0, 0};
 			}
 		}
+	}
+
+	[Remote]
+	private void SetCellItem(int x, int y, int z, int itemIndex){
+		base.SetCellItem(x,y,z,itemIndex);
 	}
 
 	public void OnAreaInputEvent(Camera camera, InputEvent @event, Vector3 click_position, Vector3 click_normal, int shape_idx)
@@ -190,17 +192,23 @@ public class MapGen : GridMap
 						{
 							if (pos1.x < pos2.x)
 							{
-								if (pos1.z < pos2.z)
+								if (pos1.z < pos2.z){
+									base.SetCellItem((int)(x+pos1.x), (int)pos1.y, (int)(z+pos1.z), 26);
 									SetCellItem((int)(x+pos1.x), (int)pos1.y, (int)(z+pos1.z), 26);
-								else
+								}else{
+									base.SetCellItem((int)(x+pos1.x), (int)pos1.y, (int)(z+pos1.z), 26);
 									SetCellItem((int)(x+pos1.x), (int)pos1.y, (int)(z+pos2.z), 26);
+								}
 							}
 							else
 							{
-								if (pos1.z < pos2.z)
+								if (pos1.z < pos2.z){
+									base.SetCellItem((int)(x+pos1.x), (int)pos1.y, (int)(z+pos1.z), 26);
 									SetCellItem((int)(x+pos2.x), (int)pos1.y, (int)(z+pos1.z), 26);
-								else
+								}else{
+									base.SetCellItem((int)(x+pos1.x), (int)pos1.y, (int)(z+pos1.z), 26);
 									SetCellItem((int)(x+pos2.x), (int)pos1.y, (int)(z+pos2.z), 26);
+								}	
 							}
 						}
 					}
@@ -210,9 +218,6 @@ public class MapGen : GridMap
 				playerlevel.CheckSpace(click_position);
 			} 
 		}
-	}
-	private void Collision_DC(Area area){
-		GD.Print(area);
 	}
 
 	private const float rayLength = 1000;
@@ -232,6 +237,7 @@ public class MapGen : GridMap
 				GD.Print(res["position"], res["collider"]);
 				Vector3 pos = (Vector3) res["position"];
 				pos /= cell_size;
+				base.SetCellItem((int)pos.x, (int)pos.y + placement_height_offset, (int)pos.z, 26);
 				SetCellItem((int)pos.x, (int)pos.y + placement_height_offset, (int)pos.z, 26);
 			}
 		}
