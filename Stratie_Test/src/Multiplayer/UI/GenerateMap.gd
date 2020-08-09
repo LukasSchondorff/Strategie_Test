@@ -4,7 +4,6 @@ export(String, FILE, "*.tscn") var map_scene_path = "res://Map/Spatial.tscn"
 var map_scene : PackedScene = load(map_scene_path)
 
 func _ready() -> void:
-	disabled = true
 	visible = false
 
 func _on_GenerateMap_button_up() -> void:
