@@ -76,13 +76,11 @@ bbcode_enabled = true
 scroll_active = false
 script = ExtResource( 5 )
 
-[node name="GenerateMap" type="Button" parent="." groups=[
-"InLobby",
-]]
+[node name="GenerateMap" type="Button" parent="."]
 margin_top = 190.0
 margin_right = 285.0
 margin_bottom = 210.0
-text = "Generate Map"
+text = "Join Map"
 script = ExtResource( 6 )
 [connection signal="button_up" from="Host" to="Host" method="_on_Host_button_up"]
 [connection signal="button_up" from="Join" to="Join" method="_on_Join_button_up"]
