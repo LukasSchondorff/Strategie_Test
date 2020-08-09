@@ -88,11 +88,11 @@ public class MapGen : GridMap
 
 	[Remote]
 	private void GetAttributes(){
-		RpcId(GetTree().GetRpcSenderId(), nameof(SetAttributes), open_simplex_new.Seed, open_simplex_new.Octaves, open_simplex_new.Period, open_simplex_new.Lacunarity, open_simplex_new.Persistence, width, height, CellSize);
+		RpcId(GetTree().GetRpcSenderId(), nameof(SetAttributes), open_simplex_new.Seed, open_simplex_new.Octaves, open_simplex_new.Period, open_simplex_new.Lacunarity, open_simplex_new.Persistence, width, height, CellSize, tree_spread);
 	}
 
 	[Remote]
-	private void SetAttributes(int seed, int octaves, float period, float lacunarity, float persistence, int width, float height, Vector3 CellSize){
+	private void SetAttributes(int seed, int octaves, float period, float lacunarity, float persistence, int width, float height, Vector3 CellSize, float tree_spread){
 		open_simplex_new.Seed = seed;
 		open_simplex_new.Octaves = octaves;
 		open_simplex_new.Period = period;
@@ -103,6 +103,7 @@ public class MapGen : GridMap
 		length = width;
 		this.height = height;
 		this.CellSize = CellSize;
+		this.tree_spread = tree_spread;
 
 		EmitSignal(nameof(AttributesReceived));
 	}
