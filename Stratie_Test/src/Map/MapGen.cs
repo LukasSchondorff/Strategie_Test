@@ -39,49 +39,23 @@ public class MapGen : GridMap
 		length = width;
 		height = 1f;
 		open_simplex_new = new OpenSimplexNoise();
+		mutex = new System.Threading.Mutex();
 		CellSize = cell_size;
 
-		if (GetTree().NetworkPeer != null && GetTree().NetworkPeer.GetConnectionStatus() == NetworkedMultiplayerPeer.ConnectionStatus.Connected && !IsNetworkMaster()){
-			RpcId(1, nameof(GetAttributes));
-			
-			var peer = GetTree().NetworkPeer;
-			List<object> attributes = new List<object>();
-
-			for (int i = 0; i < peer.GetAvailablePacketCount(); i++){
-				try{
-					attributes.Add(BitConverter.ToInt16(peer.GetPacket(), 0));
-				} catch (System.ArgumentException e){
-					GD.Print(e);
-				}
-			}
-
-			SetAttributes(attributes.ToArray());
-
+		if (GetTree().NetworkPeer != null && GetTree().NetworkPeer.GetConnectionStatus() == NetworkedMultiplayerPeer.ConnectionStatus.Connected && IsNetworkMaster()){
+			RandomNumberGenerator randomizer = new RandomNumberGenerator();
+			randomizer.Randomize();
+			open_simplex_new.Seed = (int) randomizer.Randi();
+			//open_symplex_new.octaves = 4
+			//open_symplex_new.period = 256
+			//open_symplex_new.lacunarity = 2
+			//open_symplex_new.persistence = 0.5
+			open_simplex_new.Octaves = randomizer.RandiRange(1, 9);
+			open_simplex_new.Period = randomizer.RandfRange(10, 70);
+			open_simplex_new.Lacunarity = randomizer.RandfRange(0.1f, 4);
+			open_simplex_new.Persistence = randomizer.RandfRange(0, 0); // 0 - 0.5
 			mutex = new System.Threading.Mutex();
-
-			GenerateWorld();
-
-			GetNode("Area").Connect("input_event", this, nameof(OnAreaInputEvent));
-			SetCollisionLayerBit(20, true);
-
-			GenerateCollisionArea();
-			playerlevel = ((PlayerLevel) GetNode("../PlayerLevel"));
-			playerlevel.init(cell_size, width, length);
-			return;
 		}
-
-		RandomNumberGenerator randomizer = new RandomNumberGenerator();
-		randomizer.Randomize();
-		open_simplex_new.Seed = (int) randomizer.Randi();
-		//open_symplex_new.octaves = 4
-		//open_symplex_new.period = 256
-		//open_symplex_new.lacunarity = 2
-		//open_symplex_new.persistence = 0.5
-		open_simplex_new.Octaves = randomizer.RandiRange(1, 9);
-		open_simplex_new.Period = randomizer.RandfRange(10, 70);
-		open_simplex_new.Lacunarity = randomizer.RandfRange(0.1f, 4);
-		open_simplex_new.Persistence = randomizer.RandfRange(0, 0); // 0 - 0.5
-		mutex = new System.Threading.Mutex();
 
 		GenerateWorld();
 
@@ -93,26 +67,12 @@ public class MapGen : GridMap
 		playerlevel.init(cell_size, width, length);
 	}
 
-	[Master]
-	private void GetAttributes(){
-		object[] attributes = new object[8];
-		attributes[0] = open_simplex_new.Seed;
-		attributes[1] = open_simplex_new.Octaves;
-		attributes[2] = open_simplex_new.Period;
-		attributes[3] = open_simplex_new.Lacunarity;
-		attributes[4] = open_simplex_new.Persistence;
-		
-		attributes[5] = width;
-		attributes[6] = height;
-		attributes[7] = CellSize;
-
-		var peer = GetTree().NetworkPeer;
-		foreach (dynamic attr in attributes) {
-			peer.PutPacket(BitConverter.GetBytes(attr));
-		}
-		//RpcId(GetTree().GetRpcSenderId(), nameof(SetAttributes), new object[] {open_simplex_new.Seed, open_simplex_new.Octaves, open_simplex_new.Period, open_simplex_new.Lacunarity, open_simplex_new.Persistence, width, height, CellSize});
+	private void PlayerConnected(int id){
+		RpcId(id, nameof(SetAttributes), new object[] {open_simplex_new.Seed, open_simplex_new.Octaves, open_simplex_new.Period, open_simplex_new.Lacunarity, open_simplex_new.Persistence, width, height, CellSize});
+		GD.Print("Attributes sent");
 	}
 
+	[Remote]
 	private void SetAttributes(object[] attributes){
 		open_simplex_new.Seed = (int)attributes[0];
 		open_simplex_new.Octaves = (int)attributes[1];
@@ -202,6 +162,7 @@ public class MapGen : GridMap
 			threaddy.Join();
 
 		EmitSignal(nameof(ReadySignal));
+		GetTree().Connect("network_peer_connected", this, nameof(PlayerConnected));
 	}
 
 	private int[] GetTileIndex(float noise_sample)
