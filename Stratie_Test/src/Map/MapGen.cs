@@ -299,17 +299,17 @@ public class MapGen : GridMap
 								if (pos1.x < pos2.x)
 								{
 									if (pos1.z < pos2.z){
-										SetCellItem((int)(x+pos1.x), (int)pos1.y, (int)(z+pos1.z), 26);
+										Rpc(nameof(SetCellItem), (int)(x+pos1.x), (int)pos1.y, (int)(z+pos1.z), 26);
 									}else{
-										SetCellItem((int)(x+pos1.x), (int)pos1.y, (int)(z+pos2.z), 26);
+										Rpc(nameof(SetCellItem), (int)(x+pos1.x), (int)pos1.y, (int)(z+pos2.z), 26);
 									}
 								}
 								else
 								{
 									if (pos1.z < pos2.z){
-										SetCellItem((int)(x+pos2.x), (int)pos1.y, (int)(z+pos1.z), 26);
+										Rpc(nameof(SetCellItem), (int)(x+pos2.x), (int)pos1.y, (int)(z+pos1.z), 26);
 									}else{
-										SetCellItem((int)(x+pos2.x), (int)pos1.y, (int)(z+pos2.z), 26);
+										Rpc(nameof(SetCellItem), (int)(x+pos2.x), (int)pos1.y, (int)(z+pos2.z), 26);
 									}	
 								}
 							}
