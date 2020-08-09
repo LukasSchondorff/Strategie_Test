@@ -184,6 +184,9 @@ public class MapGen : GridMap
 			threaddy.Join();
 
 		EmitSignal(nameof(ReadySignal));
+		
+		if (IsNetworkMaster())
+			GetNode("/root/MapSync").EmitSignal("ReadyToSendAttributes");
 	}
 
 	private int[] GetTileIndex(float noise_sample)
