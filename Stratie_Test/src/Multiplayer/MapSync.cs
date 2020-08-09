@@ -6,6 +6,10 @@ public class MapSync : Node
     [Signal]
     public delegate void ReadyToSendAttributes(); 
 
+    [Signal]
+    public delegate void MayJoin(); 
+    public bool AbleToJoin = false;
+
     public struct MapAttributes{
         public MapAttributes(int seed, int octaves, float period, float lacunarity, float persistence, int width, float height, Vector3 CellSize, float tree_spread){
             this.seed = seed;
@@ -34,14 +38,20 @@ public class MapSync : Node
     public override void _Ready()
     {
         attributes = new MapAttributes();
-        Connect(nameof(ReadyToSendAttributes), this, nameof(EnableJoining));
+        Connect(nameof(ReadyToSendAttributes), this, nameof(JoiningEnabled));
     }
 
     public void SetAttributes(int seed, int octaves, float period, float lacunarity, float persistence, int width, float height, Vector3 CellSize, float tree_spread){
         attributes = new MapAttributes(seed, octaves, period, lacunarity, persistence, width, height, CellSize, tree_spread);
     }
 
+    public void JoiningEnabled(){
+        AbleToJoin = true;
+        Rpc(nameof(EnableJoining));
+    }
+
+    [Remote]
     public void EnableJoining(){
-        Rpc(nameof(EmitSignal), nameof(ReadyToSendAttributes));
+        EmitSignal(nameof(MayJoin));
     }
 }
