@@ -254,7 +254,7 @@ public class MapGen : GridMap
 				}
 			}
 			if (mouse_event.ButtonIndex == (int) ButtonList.Right && mouse_event.IsPressed()){
-				playerlevel.CheckSpace(click_position);
+				//playerlevel.CheckSpace(click_position);
 			} 
 		}
 	}
