@@ -3,19 +3,42 @@ using System;
 
 public class MapSync : Node
 {
-    // Declare member variables here. Examples:
-    // private int a = 2;
-    // private string b = "text";
+    public struct MapAttributes{
+        public MapAttributes(int seed, int octaves, float period, float lacunarity, float persistence, int width, float height, Vector3 CellSize, float tree_spread){
+            this.seed = seed;
+            this.octaves = octaves;
+            this.period = period;
+            this.lacunarity = lacunarity;
+            this.persistence = persistence;
+            this.width = width;
+            this.height = height;
+            this.CellSize = CellSize;
+            this.tree_spread = tree_spread;
+        }
+        int seed;
+        int octaves;
+        float period;
+        float lacunarity;
+        float persistence;
+        int width;
+        float height;
+        Vector3 CellSize;
+        float tree_spread;
+    }
 
+    private MapAttributes attributes;
     // Called when the node enters the scene tree for the first time.
     public override void _Ready()
     {
-        
+        attributes = new MapAttributes();
     }
 
-//  // Called every frame. 'delta' is the elapsed time since the previous frame.
-//  public override void _Process(float delta)
-//  {
-//      
-//  }
+    public void SetAttributes(int seed, int octaves, float period, float lacunarity, float persistence, int width, float height, Vector3 CellSize, float tree_spread){
+        attributes = new MapAttributes(seed, octaves, period, lacunarity, persistence, width, height, CellSize, tree_spread);
+    }
+
+    [Remote]
+    public void GetAttributes(){
+        
+    }
 }
