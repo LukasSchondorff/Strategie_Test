@@ -201,7 +201,7 @@ public class MapGen : GridMap
 				}
 			}
 			if (mouse_event.ButtonIndex == (int) ButtonList.Right && mouse_event.IsPressed()){
-				playerlevel.CheckSpace(click_position);
+				//playerlevel.CheckSpace(click_position);
 			} 
 		}
 	}
@@ -225,6 +225,7 @@ public class MapGen : GridMap
 			if	(res.Contains("position")){
 				GD.Print(res["position"], res["collider"]);
 				Vector3 pos = (Vector3) res["position"];
+				playerlevel.CheckSpace(pos);
 				pos /= cell_size;
 				SetCellItem((int)pos.x, (int)pos.y + placement_height_offset, (int)pos.z, 26);
 			}
