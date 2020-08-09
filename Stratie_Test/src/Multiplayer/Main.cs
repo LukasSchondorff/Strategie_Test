@@ -98,6 +98,9 @@ public class Main : Node
 	{
 		GD.Print($"tell other player my name is {PlayerName}");
 
+		if ((bool) GetNode("/root/MapSync").Get("AbleToJoin")) {
+			GetNode("/root/MapSync").EmitSignal("ReadyToSendAttributes");
+		}
 		RpcId(id, nameof(RegisterPlayer), PlayerName);
 	}
 
