@@ -67,6 +67,7 @@
     <Compile Include="src\Multiplayer\Main.cs" />
     <Compile Include="src\Multiplayer\Chat.cs" />
     <Compile Include="src\Map\MapGen.cs" />
+    <Compile Include="src\Multiplayer\MapSync.cs" />
     <Compile Include="src\Units\UnitBase.cs" />
   </ItemGroup>
   <ItemGroup>

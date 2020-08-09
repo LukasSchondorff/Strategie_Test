@@ -6,14 +6,17 @@ using System.Collections.Generic;
 
 public class MapGen : GridMap
 {
-	[Export(PropertyHint.Range, "0,15,or_greater")]
+	[Export(PropertyHint.Range, "1,15,or_greater")]
 	private int chunk_number = 5;
 	
 	[Export(PropertyHint.Range, "-1,1,0.01")]
-	private float Hill_Fatness = -0.5f;
+	private float Hill_Fatness = 0f;
 	
 	[Export(PropertyHint.Range, "1,100,or_greater")]
 	private int Hill_Tallness = 100;
+
+	[Export(PropertyHint.Range, "-1,1,0.01")]
+	private float tree_spread = -0.5f;
 	int chunk_loader = 32;
 	private Vector3 cell_size = new Vector3(3f,1.5f,3f);
 	int width;
@@ -35,22 +38,24 @@ public class MapGen : GridMap
 		width = chunk_number*chunk_loader*(int)CellSize.x;
 		length = width;
 		height = 1f;
-
+		open_simplex_new = new OpenSimplexNoise();
+		mutex = new System.Threading.Mutex();
 		CellSize = cell_size;
 
-		RandomNumberGenerator randomizer = new RandomNumberGenerator();
-		randomizer.Randomize();
-		open_simplex_new = new OpenSimplexNoise();
-		open_simplex_new.Seed = (int) randomizer.Randi();
-		//open_symplex_new.octaves = 4
-		//open_symplex_new.period = 256
-		//open_symplex_new.lacunarity = 2
-		//open_symplex_new.persistence = 0.5
-		open_simplex_new.Octaves = randomizer.RandiRange(1, 9);
-		open_simplex_new.Period = randomizer.RandfRange(10, 70);
-		open_simplex_new.Lacunarity = randomizer.RandfRange(0.1f, 4);
-		open_simplex_new.Persistence = randomizer.RandfRange(0, 0); // 0 - 0.5
-		mutex = new System.Threading.Mutex();
+		if (GetTree().NetworkPeer != null && GetTree().NetworkPeer.GetConnectionStatus() == NetworkedMultiplayerPeer.ConnectionStatus.Connected && IsNetworkMaster()){
+			RandomNumberGenerator randomizer = new RandomNumberGenerator();
+			randomizer.Randomize();
+			open_simplex_new.Seed = (int) randomizer.Randi();
+			//open_symplex_new.octaves = 4
+			//open_symplex_new.period = 256
+			//open_symplex_new.lacunarity = 2
+			//open_symplex_new.persistence = 0.5
+			open_simplex_new.Octaves = randomizer.RandiRange(1, 9);
+			open_simplex_new.Period = randomizer.RandfRange(10, 70);
+			open_simplex_new.Lacunarity = randomizer.RandfRange(0.1f, 4);
+			open_simplex_new.Persistence = randomizer.RandfRange(0, 0); // 0 - 0.5
+			mutex = new System.Threading.Mutex();
+		}
 
 		GenerateWorld();
 
@@ -62,6 +67,24 @@ public class MapGen : GridMap
 		playerlevel.init(cell_size, width, length);
 	}
 
+	private void PlayerConnected(int id){
+		RpcId(id, nameof(SetAttributes), new object[] {open_simplex_new.Seed, open_simplex_new.Octaves, open_simplex_new.Period, open_simplex_new.Lacunarity, open_simplex_new.Persistence, width, height, CellSize});
+		GD.Print("Attributes sent");
+	}
+
+	[Remote]
+	private void SetAttributes(object[] attributes){
+		open_simplex_new.Seed = (int)attributes[0];
+		open_simplex_new.Octaves = (int)attributes[1];
+		open_simplex_new.Period = (float)attributes[2];
+		open_simplex_new.Lacunarity = (float)attributes[3];
+		open_simplex_new.Persistence = (float)attributes[4];
+		
+		width = (int) attributes[5];
+		length = width;
+		height = (float)attributes[6];
+		CellSize = (Vector3)attributes[7];
+	}
 
 	private void GenerateCollisionArea()
 	{
@@ -84,7 +107,6 @@ public class MapGen : GridMap
 		*/
 	}
 
-
 	private void GenerateQuadrant(System.Object obj)
 	{
 		Vector3[] fromto;
@@ -106,8 +128,12 @@ public class MapGen : GridMap
 			foreach (int z in Enumerable.Range((int)from.z, diff_z))
 			{
 				int[] index_height = GetTileIndex(open_simplex_new.GetNoise3d(x, 0, z));
+				bool isTree = (open_simplex_new.GetNoise3d(x, 100, z)) <= tree_spread;
 				mutex.WaitOne();
-				SetCellItem(x, index_height[1], z, index_height[0], 10);
+				base.SetCellItem(x, index_height[1], z, index_height[0]);
+				if (isTree){
+					base.SetCellItem(x, index_height[1]+1, z, 20);
+				}
 				mutex.ReleaseMutex();
 			}
 		}
@@ -136,8 +162,8 @@ public class MapGen : GridMap
 			threaddy.Join();
 
 		EmitSignal(nameof(ReadySignal));
+		GetTree().Connect("network_peer_connected", this, nameof(PlayerConnected));
 	}
-
 
 	private int[] GetTileIndex(float noise_sample)
 	{	
@@ -161,6 +187,10 @@ public class MapGen : GridMap
 		}
 	}
 
+	[RemoteSync]
+	private void SetCellItem(int x, int y, int z, int itemIndex){
+		base.SetCellItem(x,y,z,itemIndex);
+	}
 
 	public void OnAreaInputEvent(Camera camera, InputEvent @event, Vector3 click_position, Vector3 click_normal, int shape_idx)
 	{
@@ -184,17 +214,19 @@ public class MapGen : GridMap
 						{
 							if (pos1.x < pos2.x)
 							{
-								if (pos1.z < pos2.z)
+								if (pos1.z < pos2.z){
 									SetCellItem((int)(x+pos1.x), (int)pos1.y, (int)(z+pos1.z), 26);
-								else
+								}else{
 									SetCellItem((int)(x+pos1.x), (int)pos1.y, (int)(z+pos2.z), 26);
+								}
 							}
 							else
 							{
-								if (pos1.z < pos2.z)
+								if (pos1.z < pos2.z){
 									SetCellItem((int)(x+pos2.x), (int)pos1.y, (int)(z+pos1.z), 26);
-								else
+								}else{
 									SetCellItem((int)(x+pos2.x), (int)pos1.y, (int)(z+pos2.z), 26);
+								}	
 							}
 						}
 					}
@@ -204,9 +236,6 @@ public class MapGen : GridMap
 				//playerlevel.CheckSpace(click_position);
 			} 
 		}
-	}
-	private void Collision_DC(Area area){
-		GD.Print(area);
 	}
 
 	private const float rayLength = 1000;
@@ -227,7 +256,11 @@ public class MapGen : GridMap
 				Vector3 pos = (Vector3) res["position"];
 				playerlevel.CheckSpace(pos);
 				pos /= cell_size;
-				SetCellItem((int)pos.x, (int)pos.y + placement_height_offset, (int)pos.z, 26);
+				if (GetTree().NetworkPeer != null && GetTree().NetworkPeer.GetConnectionStatus() == NetworkedMultiplayerPeer.ConnectionStatus.Connected){
+					Rpc("SetCellItem", new object[] {(int)pos.x, (int)pos.y + placement_height_offset, (int)pos.z, 26});
+				} else {
+					SetCellItem((int)pos.x, (int)pos.y + placement_height_offset, (int)pos.z, 26);
+				}
 			}
 		}
 	}

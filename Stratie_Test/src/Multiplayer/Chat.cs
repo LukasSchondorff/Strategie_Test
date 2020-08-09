@@ -16,7 +16,7 @@ public class Chat : Node
 		SendButton.Connect("button_up", this, nameof(SendMessage));
 	}
 
-	[Remote]
+	[RemoteSync]
 	private void ReceiveMessage(string message)
 	{	
 		AddMessage(message);
@@ -28,7 +28,6 @@ public class Chat : Node
 		{
 			string message = $"[color=yellow]{GetNode("/root/Multiplayer_node").Get("PlayerName"),-10}:[/color] {MessageText.Text}";
 			Rpc(nameof(ReceiveMessage), message);
-			AddMessage(message);
 			MessageText.Clear();
 		}
 	}

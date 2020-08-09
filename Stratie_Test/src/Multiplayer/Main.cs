@@ -9,6 +9,8 @@ public class Main : Node
 
 	public string PlayerName { get; set; }
 
+	private string ServerAddress { get; set; }
+
 	private Dictionary<int, string> Players = new Dictionary<int, string>();
 
 	[Signal]
@@ -39,7 +41,6 @@ public class Main : Node
 		var peer = new NetworkedMultiplayerENet();
 		peer.CreateServer(default_port, max_players);
 		GetTree().NetworkPeer = peer;
-
 		EmitSignal(nameof(SuccessSignal), "Successfully connected to server");
 		EmitSignal(nameof(SuccessSignal), "You are now hosting.");
 
@@ -56,6 +57,7 @@ public class Main : Node
 		GD.Print($"Joining game with address {address}");
 
 		PlayerName = name;
+		ServerAddress = address;
 
 		var clientPeer = new NetworkedMultiplayerENet();
 		var result = clientPeer.CreateClient(address, default_port);
@@ -122,7 +124,29 @@ public class Main : Node
 	{
 		Players.Clear();
 		GetTree().NetworkPeer = null;
-		
+
+		var clientPeer = new NetworkedMultiplayerENet();
+		Error result = 0;
+		for (int i = 0; i < 10; i++){
+			result = clientPeer.CreateClient(ServerAddress, default_port);
+
+			if(result != 0) 
+			{
+				EmitSignal(nameof(ErrorSignal), $"Connection failed! ({result.ToString()})");
+				System.Threading.Thread.Sleep(1000);
+			}
+			else 
+			{
+				break;
+			}
+		}
+
+		if (result == 0){
+			GetTree().NetworkPeer = clientPeer;
+			EmitSignal(nameof(SuccessSignal), "Connecting...");
+			return;
+		}
+
 		EmitSignal(nameof(ErrorSignal), "Disconnected from the server");
 	}
 
