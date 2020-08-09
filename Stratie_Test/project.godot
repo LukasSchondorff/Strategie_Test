@@ -23,6 +23,7 @@ config/icon="res://icon.png"
 
 Global="*res://src/Global/global.gd"
 Multiplayer_node="*res://src/Multiplayer/Main.cs"
+MapSync="*res://src/Multiplayer/MapSync.cs"
 
 [input]
 
