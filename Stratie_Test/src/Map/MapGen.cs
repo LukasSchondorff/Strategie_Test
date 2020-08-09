@@ -57,7 +57,6 @@ public class MapGen : GridMap
 				open_simplex_new.Period = randomizer.RandfRange(10, 70);
 				open_simplex_new.Lacunarity = randomizer.RandfRange(0.1f, 4);
 				open_simplex_new.Persistence = randomizer.RandfRange(0, 0); // 0 - 0.5
-				mutex = new System.Threading.Mutex();
 			}
 			else {
 				RpcId(1, nameof(GetAttributes));
@@ -150,9 +149,51 @@ public class MapGen : GridMap
 			foreach (int z in Enumerable.Range((int)from.z, diff_z))
 			{
 				int[] index_height = GetTileIndex(open_simplex_new.GetNoise3d(x, 0, z));
-				bool isTree = (open_simplex_new.GetNoise3d(x, 100, z)) <= tree_spread;
+
 				mutex.WaitOne();
+				float interval = 1/(float)Hill_Tallness * ((Hill_Fatness < 0) ? ((Hill_Fatness+1)/2) : Math.Abs((Hill_Fatness-1)/2));
+				int tmp = 0;
+				//int extra_blocks = 1;
+				int extra_blocks = (int) (Math.Abs(open_simplex_new.GetNoise3d(x, 0, z) - open_simplex_new.GetNoise3d(x+1, 0, z)) / interval);
+				int extra_blocks1 = (int) (Math.Abs(open_simplex_new.GetNoise3d(x, 0, z) - open_simplex_new.GetNoise3d(x-1, 0, z)) / interval);
+				int extra_blocks2 = (int) (Math.Abs(open_simplex_new.GetNoise3d(x, 0, z) - open_simplex_new.GetNoise3d(x, 0, z+1)) / interval);
+				int extra_blocks3 = (int) (Math.Abs(open_simplex_new.GetNoise3d(x, 0, z) - open_simplex_new.GetNoise3d(x, 0, z-1)) / interval);
+
+				//GD.Print(extra_blocks, extra_blocks1, extra_blocks2, extra_blocks3);
+
+				int max = 0;
+				if(extra_blocks > extra_blocks1)
+					if(extra_blocks > extra_blocks2)
+						if(extra_blocks > extra_blocks3)
+							max = extra_blocks;
+						else
+							max = extra_blocks3;
+					else
+						if(extra_blocks2 > extra_blocks3)
+							max = extra_blocks2;
+						else
+							max = extra_blocks3;
+				else
+					if(extra_blocks1 > extra_blocks2)
+						if(extra_blocks1 > extra_blocks3)
+							max = extra_blocks1;
+						else
+							max = extra_blocks3;
+					else
+						if(extra_blocks2 > extra_blocks3)
+							max = extra_blocks2;
+						else
+							max = extra_blocks3;
+
+				bool isTree = (open_simplex_new.GetNoise3d(x, 100, z)) <= tree_spread;
 				base.SetCellItem(x, index_height[1], z, index_height[0]);
+				
+				for (int y = 1; y < max; y++){
+					if(index_height[1]-y < 0)
+						break;
+					base.SetCellItem(x, index_height[1]-y, z, index_height[0]);
+				}
+				
 				if (isTree){
 					base.SetCellItem(x, index_height[1]+1, z, 20);
 				}
