@@ -5,6 +5,7 @@ var map_scene : PackedScene = load(map_scene_path)
 
 func _ready() -> void:
 	disabled = true
+	visible = false
 
 func _on_GenerateMap_button_up() -> void:
 	if get_tree().change_scene_to(map_scene) != OK:
