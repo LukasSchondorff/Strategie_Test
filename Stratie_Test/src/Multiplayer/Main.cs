@@ -41,7 +41,7 @@ public class Main : Node
 		var peer = new NetworkedMultiplayerENet();
 		peer.CreateServer(default_port, max_players);
 		GetTree().NetworkPeer = peer;
-		EmitSignal(nameof(SuccessSignal), "Successfully connected to server");
+
 		EmitSignal(nameof(SuccessSignal), "You are now hosting.");
 
 		return true;
