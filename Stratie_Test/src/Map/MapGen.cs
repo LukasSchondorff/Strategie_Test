@@ -31,7 +31,9 @@ public class MapGen : GridMap
 	private PlayerLevel playerlevel;
 
 	[Signal]
-	public delegate void ReadySignal();
+	public delegate void ReadySignal();	
+	[Signal]
+	public delegate void AttributesReceived();
 
 	public override void _Ready()
 	{
@@ -42,50 +44,70 @@ public class MapGen : GridMap
 		mutex = new System.Threading.Mutex();
 		CellSize = cell_size;
 
-		if (GetTree().NetworkPeer != null && GetTree().NetworkPeer.GetConnectionStatus() == NetworkedMultiplayerPeer.ConnectionStatus.Connected && IsNetworkMaster()){
-			RandomNumberGenerator randomizer = new RandomNumberGenerator();
-			randomizer.Randomize();
-			open_simplex_new.Seed = (int) randomizer.Randi();
-			//open_symplex_new.octaves = 4
-			//open_symplex_new.period = 256
-			//open_symplex_new.lacunarity = 2
-			//open_symplex_new.persistence = 0.5
-			open_simplex_new.Octaves = randomizer.RandiRange(1, 9);
-			open_simplex_new.Period = randomizer.RandfRange(10, 70);
-			open_simplex_new.Lacunarity = randomizer.RandfRange(0.1f, 4);
-			open_simplex_new.Persistence = randomizer.RandfRange(0, 0); // 0 - 0.5
-			mutex = new System.Threading.Mutex();
+		if (GetTree().NetworkPeer != null && GetTree().NetworkPeer.GetConnectionStatus() == NetworkedMultiplayerPeer.ConnectionStatus.Connected){
+			if(IsNetworkMaster()){
+				RandomNumberGenerator randomizer = new RandomNumberGenerator();
+				randomizer.Randomize();
+				open_simplex_new.Seed = (int) randomizer.Randi();
+				//open_symplex_new.octaves = 4
+				//open_symplex_new.period = 256
+				//open_symplex_new.lacunarity = 2
+				//open_symplex_new.persistence = 0.5
+				open_simplex_new.Octaves = randomizer.RandiRange(1, 9);
+				open_simplex_new.Period = randomizer.RandfRange(10, 70);
+				open_simplex_new.Lacunarity = randomizer.RandfRange(0.1f, 4);
+				open_simplex_new.Persistence = randomizer.RandfRange(0, 0); // 0 - 0.5
+				mutex = new System.Threading.Mutex();
+			}
+			else {
+				RpcId(1, nameof(GetAttributes));
+				WaitForAttributes();
+				return;
+			}
 		}
 
+		Init();
+	}
+
+	private void Init(){
 		GenerateWorld();
 
-		GetNode("Area").Connect("input_event", this, nameof(OnAreaInputEvent));
 		SetCollisionLayerBit(20, true);
 
-		GenerateCollisionArea();
+		//GenerateCollisionArea();
+		//GetNode("Area").Connect("input_event", this, nameof(OnAreaInputEvent));
 		playerlevel = ((PlayerLevel) GetNode("../PlayerLevel"));
 		playerlevel.init(cell_size, width, length);
 	}
 
-	private void PlayerConnected(int id){
-		RpcId(id, nameof(SetAttributes), new object[] {open_simplex_new.Seed, open_simplex_new.Octaves, open_simplex_new.Period, open_simplex_new.Lacunarity, open_simplex_new.Persistence, width, height, CellSize});
-		GD.Print("Attributes sent");
+	private async void WaitForAttributes(){
+		await ToSignal(this, nameof(AttributesReceived));
+
+		Init();
 	}
 
 	[Remote]
-	private void SetAttributes(object[] attributes){
-		open_simplex_new.Seed = (int)attributes[0];
-		open_simplex_new.Octaves = (int)attributes[1];
-		open_simplex_new.Period = (float)attributes[2];
-		open_simplex_new.Lacunarity = (float)attributes[3];
-		open_simplex_new.Persistence = (float)attributes[4];
-		
-		width = (int) attributes[5];
-		length = width;
-		height = (float)attributes[6];
-		CellSize = (Vector3)attributes[7];
+	private void GetAttributes(){
+		RpcId(GetTree().GetRpcSenderId(), nameof(SetAttributes), open_simplex_new.Seed, open_simplex_new.Octaves, open_simplex_new.Period, open_simplex_new.Lacunarity, open_simplex_new.Persistence, width, height, CellSize);
 	}
 
+	[Remote]
+	private void SetAttributes(int seed, int octaves, float period, float lacunarity, float persistence, int width, float height, Vector3 CellSize){
+		open_simplex_new.Seed = seed;
+		open_simplex_new.Octaves = octaves;
+		open_simplex_new.Period = period;
+		open_simplex_new.Lacunarity = lacunarity;
+		open_simplex_new.Persistence = persistence;
+		
+		this.width = width;
+		length = width;
+		this.height = height;
+		this.CellSize = CellSize;
+
+		EmitSignal(nameof(AttributesReceived));
+	}
+
+	/* now handled by static bodies on meshes
 	private void GenerateCollisionArea()
 	{
 		CollisionShape shape = new CollisionShape();
@@ -97,15 +119,14 @@ public class MapGen : GridMap
 		shape.Translation = new Vector3(width, 0, length) / 2;
 		GetNode("Area").AddChild(shape);
 
-		/*
 		//Visual Representation
 		MeshInstance mi = new MeshInstance();
 		mi.Mesh = new CubeMesh();
 		mi.Translation = new Vector3(width, 0, length) / 2;
 		mi.Scale = new Vector3(width, height*2, length) / 2;
 		GetNode("Area").AddChild(mi);
-		*/
 	}
+	*/
 
 	private void GenerateQuadrant(System.Object obj)
 	{
@@ -162,7 +183,6 @@ public class MapGen : GridMap
 			threaddy.Join();
 
 		EmitSignal(nameof(ReadySignal));
-		GetTree().Connect("network_peer_connected", this, nameof(PlayerConnected));
 	}
 
 	private int[] GetTileIndex(float noise_sample)
@@ -192,6 +212,7 @@ public class MapGen : GridMap
 		base.SetCellItem(x,y,z,itemIndex);
 	}
 
+	/* now handled by static body on meshes
 	public void OnAreaInputEvent(Camera camera, InputEvent @event, Vector3 click_position, Vector3 click_normal, int shape_idx)
 	{
 		if (@event is InputEventMouseButton)
@@ -237,40 +258,85 @@ public class MapGen : GridMap
 			} 
 		}
 	}
+	*/
 
 	private const float rayLength = 1000;
 
-	int placement_height_offset = 0;
+	float placement_height_offset = 0f;
 	public override void _Input(InputEvent @event)
 	{
-		if (@event is InputEventMouseButton eventMouseButton && eventMouseButton.Pressed && eventMouseButton.ButtonIndex == 1)
+		if (@event is InputEventMouseButton eventMouseButton)
 		{
-	   	 	var camera = (Camera)GetNode("../Spatial/Camera");
-			var from = camera.ProjectRayOrigin(eventMouseButton.Position);
-			var to = from + camera.ProjectRayNormal(eventMouseButton.Position) * rayLength;
-			var spaceState = GetWorld().DirectSpaceState;
-			var res = spaceState.IntersectRay(from, to, null, 0b10000000000000000000, true, true);
-			
-			if	(res.Contains("position")){
-				GD.Print(res["position"], res["collider"]);
-				Vector3 pos = (Vector3) res["position"];
-				pos /= cell_size;
-				if (GetTree().NetworkPeer != null && GetTree().NetworkPeer.GetConnectionStatus() == NetworkedMultiplayerPeer.ConnectionStatus.Connected){
-					Rpc("SetCellItem", new object[] {(int)pos.x, (int)pos.y + placement_height_offset, (int)pos.z, 26});
-				} else {
-					SetCellItem((int)pos.x, (int)pos.y + placement_height_offset, (int)pos.z, 26);
+			if (eventMouseButton.ButtonIndex == (int) ButtonList.Left)
+			{
+				var camera = (Camera)GetNode("../Spatial/Camera");
+				var from = camera.ProjectRayOrigin(eventMouseButton.Position);
+				var to = from + camera.ProjectRayNormal(eventMouseButton.Position) * rayLength;
+				var spaceState = GetWorld().DirectSpaceState;
+				var res = spaceState.IntersectRay(from, to, null, 0b10000000000000000000, true, true);
+				Vector3 click_position = new Vector3(0, placement_height_offset, 0);
+
+				if	(res.Contains("position")){
+					GD.Print(res["position"], res["collider"]);
+					click_position += (Vector3) res["position"];
+					if (eventMouseButton.IsPressed())
+					{
+						GD.Print(click_position);
+						
+						pos1 = click_position/cell_size;
+					}
+					else
+					{
+						pos2 = click_position/cell_size;
+						foreach (int x in Enumerable.Range(0, (int) Math.Abs(pos2.x-pos1.x)+1))
+						{
+							foreach (int z in Enumerable.Range(0, (int)Math.Abs(pos2.z-pos1.z)+1))
+							{
+								if (pos1.x < pos2.x)
+								{
+									if (pos1.z < pos2.z){
+										SetCellItem((int)(x+pos1.x), (int)pos1.y, (int)(z+pos1.z), 26);
+									}else{
+										SetCellItem((int)(x+pos1.x), (int)pos1.y, (int)(z+pos2.z), 26);
+									}
+								}
+								else
+								{
+									if (pos1.z < pos2.z){
+										SetCellItem((int)(x+pos2.x), (int)pos1.y, (int)(z+pos1.z), 26);
+									}else{
+										SetCellItem((int)(x+pos2.x), (int)pos1.y, (int)(z+pos2.z), 26);
+									}	
+								}
+							}
+						}
+					}
 				}
 			}
+			if (eventMouseButton.ButtonIndex == (int) ButtonList.Right && eventMouseButton.IsPressed()){
+				var camera = (Camera)GetNode("../Spatial/Camera");
+				var from = camera.ProjectRayOrigin(eventMouseButton.Position);
+				var to = from + camera.ProjectRayNormal(eventMouseButton.Position) * rayLength;
+				var spaceState = GetWorld().DirectSpaceState;
+				var res = spaceState.IntersectRay(from, to, null, 0b10000000000000000000, true, true);
+				Vector3 click_position = new Vector3(0, placement_height_offset, 0);
+
+				if	(res.Contains("position")){
+					GD.Print(res["position"], res["collider"]);
+					click_position += (Vector3) res["position"];
+				}
+				playerlevel.CheckSpace(click_position);
+			} 
 		}
 	}
 
 	public override void _UnhandledInput(InputEvent @event){
 		if (@event is InputEventKey nnn && nnn.Pressed){
 			if (nnn.Scancode == (int) KeyList.E){
-				placement_height_offset += 1;
+				placement_height_offset += cell_size.y;
 			}
 			else if (nnn.Scancode == (int) KeyList.Q){
-				placement_height_offset -= 1;
+				placement_height_offset -= cell_size.y;
 			}
 		}
 	}
