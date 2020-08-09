@@ -3,6 +3,9 @@ using System;
 
 public class MapSync : Node
 {
+    [Signal]
+    public delegate void ReadyToSendAttributes(); 
+
     public struct MapAttributes{
         public MapAttributes(int seed, int octaves, float period, float lacunarity, float persistence, int width, float height, Vector3 CellSize, float tree_spread){
             this.seed = seed;
@@ -31,14 +34,14 @@ public class MapSync : Node
     public override void _Ready()
     {
         attributes = new MapAttributes();
+        Connect(nameof(ReadyToSendAttributes), this, nameof(EnableJoining));
     }
 
     public void SetAttributes(int seed, int octaves, float period, float lacunarity, float persistence, int width, float height, Vector3 CellSize, float tree_spread){
         attributes = new MapAttributes(seed, octaves, period, lacunarity, persistence, width, height, CellSize, tree_spread);
     }
 
-    [Remote]
-    public void GetAttributes(){
-        
+    public void EnableJoining(){
+        Rpc(nameof(EmitSignal), nameof(ReadyToSendAttributes));
     }
 }
