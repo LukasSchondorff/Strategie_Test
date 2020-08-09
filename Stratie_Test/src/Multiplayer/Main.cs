@@ -27,7 +27,7 @@ public class Main : Node
 		GetTree().Connect("network_peer_disconnected", this, nameof(PlayerDisconnected));
 		GetTree().Connect("connected_to_server", this, nameof(ConnectedToServer));
 		GetTree().Connect("connection_failed", this, nameof(ConnectionFailed));
-		GetTree().Connect("server_disconnected", this, nameof(ServerDisconnected));
+		GetTree().Connect("server_disconnected", this, nameof(ServerDisconnected), null, (int)Godot.Object.ConnectFlags.Deferred);
 	}
 
 	public bool HostGame(string name) 
