@@ -61,6 +61,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="src\Buildings\BuildingLevel.cs" />
     <Compile Include="src\Buildings\Buildings\BuildingBase.cs" />
     <Compile Include="src\Buildings\Buildings\TownCenter.cs" />
     <Compile Include="src\Buildings\PlayerLevel.cs" />
@@ -69,13 +70,13 @@
     <Compile Include="src\Multiplayer\Chat.cs" />
     <Compile Include="src\Map\MapGen.cs" />
     <Compile Include="src\Multiplayer\MapSync.cs" />
-    <Compile Include="src\Units\UnitBase.cs" />
     <Compile Include="src\InputManager\UI\InterfaceButton.cs" />
+    <Compile Include="src\Units\UnitLevel.cs" />
+    <Compile Include="src\Units\Units\UnitBase.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Map" />
     <Folder Include="src\InputManager" />
-    <Folder Include="src\Units" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
 </Project>
