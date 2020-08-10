@@ -152,8 +152,7 @@ public class MapGen : GridMap
 
 				mutex.WaitOne();
 				float interval = 1/(float)Hill_Tallness * ((Hill_Fatness < 0) ? ((Hill_Fatness+1)/2) : Math.Abs((Hill_Fatness-1)/2));
-				int tmp = 0;
-				//int extra_blocks = 1;
+
 				int extra_blocks = (int) (Math.Abs(open_simplex_new.GetNoise3d(x, 0, z) - open_simplex_new.GetNoise3d(x+1, 0, z)) / interval);
 				int extra_blocks1 = (int) (Math.Abs(open_simplex_new.GetNoise3d(x, 0, z) - open_simplex_new.GetNoise3d(x-1, 0, z)) / interval);
 				int extra_blocks2 = (int) (Math.Abs(open_simplex_new.GetNoise3d(x, 0, z) - open_simplex_new.GetNoise3d(x, 0, z+1)) / interval);
