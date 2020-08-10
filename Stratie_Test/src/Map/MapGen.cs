@@ -35,6 +35,8 @@ public class MapGen : GridMap
 	[Signal]
 	public delegate void AttributesReceived();
 
+	[Signal]
+	public delegate void BuildingPlaced();
 	public override void _Ready()
 	{
 		width = chunk_number*chunk_loader*(int)CellSize.x;
@@ -251,7 +253,7 @@ public class MapGen : GridMap
 	}
 
 	[RemoteSync]
-	private void SetCellItem(int x, int y, int z, int itemIndex){
+	public void SetCellItem(int x, int y, int z, int itemIndex){
 		base.SetCellItem(x,y,z,itemIndex);
 	}
 
@@ -369,6 +371,7 @@ public class MapGen : GridMap
 					click_position += (Vector3) res["position"];
 				}
 				playerlevel.getBuildingLevel().CheckSpace(click_position);
+				EmitSignal(nameof(BuildingPlaced), click_position);
 			} 
 		}
 	}
