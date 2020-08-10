@@ -7,13 +7,13 @@ public class Interface : Control {
     // Buildings
     private string pathtobuildings = "res://src/Buildings/Buildings/";
 
-    private PlayerLevel playerlevel;
+    private MapGen mapgen;
 
     public override void _Ready() {
-        playerlevel = (PlayerLevel) GetNode("../PlayerLevel");
+        mapgen = (MapGen) GetNode("../GridMap");
     }
 
     public void CallBuildingAction() {
-        playerlevel.CurrentBuildingAction();
+        mapgen.GetPlayerLevel().getBuildingLevel().CurrentBuildingAction();
     }
 }
