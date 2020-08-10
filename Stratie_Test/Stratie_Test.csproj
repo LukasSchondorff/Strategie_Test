@@ -64,11 +64,13 @@
     <Compile Include="src\Buildings\Buildings\BuildingBase.cs" />
     <Compile Include="src\Buildings\Buildings\TownCenter.cs" />
     <Compile Include="src\Buildings\PlayerLevel.cs" />
+    <Compile Include="src\InputManager\UI\Interface.cs" />
     <Compile Include="src\Multiplayer\Main.cs" />
     <Compile Include="src\Multiplayer\Chat.cs" />
     <Compile Include="src\Map\MapGen.cs" />
     <Compile Include="src\Multiplayer\MapSync.cs" />
     <Compile Include="src\Units\UnitBase.cs" />
+    <Compile Include="src\InputManager\UI\InterfaceButton.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Map" />
