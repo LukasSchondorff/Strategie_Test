@@ -1,7 +1,7 @@
 [gd_scene load_steps=5 format=2]
 
 [ext_resource path="res://src/Camera.gd" type="Script" id=1]
-[ext_resource path="res://src/Map/MapGen.cs" type="Script" id=2]
+[ext_resource path="res://src/Map/RoadGen.cs" type="Script" id=2]
 [ext_resource path="res://UI/GameUI/Interface.tscn" type="PackedScene" id=6]
 [ext_resource path="res://Assets/Map/Libs/final_with_collision.meshlib" type="MeshLibrary" id=7]
 
@@ -22,10 +22,6 @@ __meta__ = {
 "_editor_clip_": 0,
 "_editor_floor_": Vector3( 0, 0, 0 )
 }
-chunk_number = 1
-Hill_Fatness = 0.16
-Hill_Tallness = 57
-tree_spread = -0.59
 
 [node name="Area" type="Area" parent="GridMap"]
 
