@@ -75,8 +75,7 @@ public class MapGen : GridMap
 
 		//GenerateCollisionArea();
 		//GetNode("Area").Connect("input_event", this, nameof(OnAreaInputEvent));
-		playerlevel = ((PlayerLevel) GetNode("../PlayerLevel"));
-		playerlevel.init(cell_size, width, length);
+		playerlevel = new PlayerLevel(cell_size, width, length, (GridMap)GetNode("../PlayerLevel"));
 	}
 
 	private async void WaitForAttributes(){
@@ -326,7 +325,7 @@ public class MapGen : GridMap
 					click_position += (Vector3) res["position"];
 					if (eventMouseButton.IsPressed())
 					{
-						GD.Print(click_position);
+						//GD.Print(click_position);
 						
 						pos1 = click_position/cell_size;
 					}
@@ -367,10 +366,10 @@ public class MapGen : GridMap
 				Vector3 click_position = new Vector3(0, placement_height_offset, 0);
 
 				if	(res.Contains("position")){
-					GD.Print(res["position"], res["collider"]);
+					//GD.Print(res["position"], res["collider"]);
 					click_position += (Vector3) res["position"];
 				}
-				playerlevel.CheckSpace(click_position);
+				playerlevel.getBuildingLevel().CheckSpace(click_position);
 			} 
 		}
 	}
@@ -384,5 +383,11 @@ public class MapGen : GridMap
 				placement_height_offset -= cell_size.y;
 			}
 		}
+	}
+	
+	
+	//TODO auslagern 
+	public PlayerLevel GetPlayerLevel() {
+		return playerlevel;
 	}
 }

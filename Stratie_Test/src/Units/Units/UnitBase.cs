@@ -1,16 +1,10 @@
 using Godot;
 using System;
 
-public class UnitBase : Node  {
+public class UnitBase  {
     
-    
-    // Called when the node enters the scene tree for the first time.
     private bool build = true;
     
-    public override void _Ready() {
-        
-    }
-
     public void setbuild(bool build) {
         this.build = build;
     }

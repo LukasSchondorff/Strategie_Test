@@ -10,11 +10,16 @@ public class TownCenter : BuildingBase {
         setBuildingLocation(location);
     }
 
-    public void ProduceVillager(Node unitlevel, Vector3 cellsize) {
-        MeshInstance mi = new MeshInstance();
-        mi.Mesh = new SphereMesh();
-        mi.Translation = getBuildingLocation()*cellsize;
-        unitlevel.AddChild(mi);
+    public Node ProduceVillager(Node unitlevel, Vector3 cellsize) {
+        GD.Print("Test");
+        
+        var unit_resource = (PackedScene)ResourceLoader.Load("res://Assets/Units/Unit.tscn");
+        if (unit_resource != null) {
+            var unit = (Spatial)unit_resource.Instance();
+            unitlevel.AddChild(unit);
+            return unit;
+        }
+        return null;
     }
     
 }

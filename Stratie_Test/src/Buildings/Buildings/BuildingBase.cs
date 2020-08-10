@@ -7,7 +7,7 @@ public class BuildingBase {
     private int building_hit_points;
     private int building_id;
     private String building_name;
-    
+
     //--------------------------------------------------
     public void setBuildingID(int building_id) {
         this.building_id = building_id;
