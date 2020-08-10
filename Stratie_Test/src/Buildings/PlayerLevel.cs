@@ -12,6 +12,7 @@ public class PlayerLevel : GridMap {
 	private Control gameinterface;
 
 	private int offset_y = 1;
+    private float epsilon = 0.05f; 
 
 	public void init(Vector3 cell_size, int map_width, int map_lenght) {
 		this.cell_size = cell_size;
@@ -36,6 +37,7 @@ public class PlayerLevel : GridMap {
             SetCellItem(m_x, m_y, m_z, 49);
             GenerateCollisionArea(m_x, m_y, m_z);
             UpdatePlayerBuildings(m_x, m_z, new TownCenter(100, 49,new Vector3(m_x, m_y, m_z)));
+            //GD.Print(m_x + " " + m_z);
         }
         setGameInterface(false);
     }
@@ -59,9 +61,10 @@ public class PlayerLevel : GridMap {
             if (mouse_event.ButtonIndex == (int) ButtonList.Right) {
                 if (mouse_event.IsPressed()) {
                     click_position = new Vector3(click_position.x / cell_size.x, click_position.y / cell_size.y, click_position.z / cell_size.z);
+                    click_position.x -= (int)System.Math.Round((click_normal.x),0,MidpointRounding.AwayFromZero) * epsilon;
+                    click_position.z -= (int)System.Math.Round((click_normal.z),0,MidpointRounding.AwayFromZero) * epsilon;
+                    
                     current_building = player_buildings[(int)click_position.x, (int)click_position.z];
-
-                    //GD.Print(current_building.getBuildingName());
                     setGameInterface(true);
                 }
             } else if (mouse_event.ButtonIndex == (int) ButtonList.Left) {
@@ -73,7 +76,6 @@ public class PlayerLevel : GridMap {
 
     public void CurrentBuildingAction() {
         int id = current_building.getBuildingID();
-
         BuildingBase current_building_placeholder = current_building;
         switch (id) {
             case 49:
