@@ -19,9 +19,9 @@ public class MapGen : GridMap
 	private float tree_spread = -0.5f;
 	int chunk_loader = 32;
 	private Vector3 cell_size = new Vector3(3f,1.5f,3f);
-	int width;
-	float height;
-	int length;
+	protected int width;
+	protected float height;
+	protected int length;
 	OpenSimplexNoise open_simplex_new;
 	float colision_area_factor = 1.5f;
 	Vector3 pos1;
