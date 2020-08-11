@@ -10,7 +10,7 @@ public class RoadGen : MapGen
 	
 	[RemoteSync]
 	public override void SetCellItem(int x, int y, int z, int itemIndex){
-		((GridMap) GetNode("../")).SetCellItem(x,y,z,itemIndex);
+		((GridMap) GetNode("./")).SetCellItem(x,y,z,itemIndex);
 	}
 	
 	public override void _Ready()
