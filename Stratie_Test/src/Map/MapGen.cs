@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading;
 using System.Collections.Generic;
 
-public class MapGen : GridMap
+public abstract class MapGen : GridMap
 {
 	[Export(PropertyHint.Range, "1,15,or_greater")]
 	private int chunk_number = 5;
@@ -255,9 +255,7 @@ public class MapGen : GridMap
 	}
 
 	[RemoteSync]
-	public void SetCellItem(int x, int y, int z, int itemIndex){
-		base.SetCellItem(x,y,z,itemIndex);
-	}
+	public abstract void SetCellItem(int x, int y, int z, int itemIndex);
 
 	/* now handled by static body on meshes
 	public void OnAreaInputEvent(Camera camera, InputEvent @event, Vector3 click_position, Vector3 click_normal, int shape_idx)

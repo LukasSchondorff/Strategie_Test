@@ -7,6 +7,12 @@ public class RoadGen : MapGen
 	private List<Vector3> buildingLocations;
 
 	private Godot.Collections.Dictionary<int, Godot.Collections.Dictionary<int, Godot.Collections.Dictionary<int, Vector3>>> buildingLocations1;
+	
+	[RemoteSync]
+	public override void SetCellItem(int x, int y, int z, int itemIndex){
+		((GridMap) GetNode("../")).SetCellItem(x,y,z,itemIndex);
+	}
+	
 	public override void _Ready()
 	{
 		buildingLocations = new List<Vector3>();
