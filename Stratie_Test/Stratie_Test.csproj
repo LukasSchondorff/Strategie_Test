@@ -72,6 +72,7 @@
     <Compile Include="src\Map\MapGen.cs" />
     <Compile Include="src\Multiplayer\MapSync.cs" />
     <Compile Include="src\InputManager\UI\InterfaceButton.cs" />
+    <Compile Include="src\Units\Fighter.cs" />
     <Compile Include="src\Units\UnitLevel.cs" />
     <Compile Include="src\Units\Units\UnitBase.cs" />
   </ItemGroup>
