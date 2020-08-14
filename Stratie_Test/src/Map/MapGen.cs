@@ -18,7 +18,7 @@ public abstract class MapGen : GridMap
 	[Export(PropertyHint.Range, "-1,1,0.01")]
 	private float tree_spread = -0.5f;
 	int chunk_loader = 32;
-	private Vector3 cell_size = new Vector3(3f,1.5f,3f);
+	private Vector3 cell_size = new Vector3(3f,1.55f,3f);
 	protected int width;
 	protected float height;
 	protected int length;
@@ -379,10 +379,10 @@ public abstract class MapGen : GridMap
 	public override void _UnhandledInput(InputEvent @event){
 		if (@event is InputEventKey nnn && nnn.Pressed){
 			if (nnn.Scancode == (int) KeyList.E){
-				placement_height_offset += cell_size.y;
+				//placement_height_offset += cell_size.y;
 			}
 			else if (nnn.Scancode == (int) KeyList.Q){
-				placement_height_offset -= cell_size.y;
+				//placement_height_offset -= cell_size.y;
 			}
 		}
 	}
