@@ -18,6 +18,7 @@ public class PlayerLevel {
 		setConnectionsBetweenLevels();
 	}
 
+<<<<<<< HEAD
 	private void setConnectionsBetweenLevels() {
 		buildinglevel.setUnitLevel(unitlevel);
 		unitlevel.setBuildingLevel(buildinglevel);
@@ -34,4 +35,24 @@ public class PlayerLevel {
 	public UnitLevel getUnitLevel() {
 		return unitlevel;
 	}
+=======
+    private void setConnectionsBetweenLevels() {
+        buildinglevel.setUnitLevel(unitlevel);
+        unitlevel.setBuildingLevel(buildinglevel);
+    }
+    //--------------------------------------------------
+    public void CheckSpaceAndDecide(Vector3 pos1, Vector3 pos2) {
+        //TODO add prio so that we need to only check one of them
+        buildinglevel.CheckSpace(pos1, pos2);
+        //unitlevel.CheckSpace(pos1, pos2);
+    }
+    //--------------------------------------------------
+    public BuildingLevel getBuildingLevel() {
+        return buildinglevel;
+    }
+    
+    public UnitLevel getUnitLevel() {
+        return unitlevel;
+    }
+>>>>>>> 7ccf337dc499edf30eab43e421f54b611fe04b1a
 }

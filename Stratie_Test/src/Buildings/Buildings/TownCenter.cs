@@ -16,6 +16,7 @@ public class TownCenter : BuildingBase {
         var unit_resource = (PackedScene)ResourceLoader.Load("res://Assets/Units/Unit.tscn");
         if (unit_resource != null) {
             var unit = (Spatial)unit_resource.Instance();
+            unit.Translation = getBuildingLocation()*cellsize;
             unitlevel.AddChild(unit);
             return unit;
         }
