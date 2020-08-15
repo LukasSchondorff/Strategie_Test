@@ -24,7 +24,9 @@ public class PlayerLevel {
     }
     //--------------------------------------------------
     public void CheckSpaceAndDecide(Vector3 pos1, Vector3 pos2) {
-        
+        //TODO add prio so that we need to only check one of them
+        buildinglevel.CheckSpace(pos1, pos2);
+        //unitlevel.CheckSpace(pos1, pos2);
     }
     //--------------------------------------------------
     public BuildingLevel getBuildingLevel() {
