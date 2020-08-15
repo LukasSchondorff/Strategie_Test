@@ -23,9 +23,15 @@ public class RoadGen : MapGen
 		base._Ready();
 	}
 
-	private void AddBuilding(Vector3 pos) {
+	public bool AddBuilding(Vector3 pos) {
 		pos /= CellSize;
-
+		if (GetCellItem((int)pos.x, (int)pos.y, (int)pos.z) == 0){
+		return true;
+		}else {
+		for (int i = -2; i < 200; i++)
+		if (GetCellItem((int)pos.x, (int)pos.y+i, (int)pos.z) == 0 || GetCellItem((int)pos.x, (int)pos.y+i, (int)pos.z) == 51){
+			return false;
+		}}
 		buildingLocations.Add(pos);
 		if(buildingLocations.Count >= 2){
 			Vector3 nearestBuilding = GetNearestBuilding(pos);
@@ -40,21 +46,22 @@ public class RoadGen : MapGen
 			if(road_height != 0){
 
 				if(road_length == 0) {
-					return;
+					return false;
 				}
 				float slope_percentage =  road_height / road_length;
 
 				if(slope_percentage > 0.5f){
+					return false;
 					// TODO: Too steep
 				}
 				else{
 					RandomNumberGenerator randomizer = new RandomNumberGenerator();
 					List<int> roadTiles = new List<int>();
 					if(distances.x > 0){
-						roadTiles.AddRange(Enumerable.Range(0, (int)(distances.x))); // -2 for building and corner
+						roadTiles.AddRange(Enumerable.Range(0, (int)(distances.x))); 
 					}
 					if(distances.z > 0){
-						roadTiles.AddRange(Enumerable.Range((int)(distances.x+1), (int)(distances.z)-1)); // -2 for building and corner
+						roadTiles.AddRange(Enumerable.Range((int)(distances.x+1), (int)(distances.z)-1)); 
 					}
 
 					List<int> roadTiles_with_rotation = new List<int>();
@@ -69,18 +76,21 @@ public class RoadGen : MapGen
 					GD.Print(road_height);					
 
 					GenerateRoad(buildingLocations[buildingLocations.Count-1], nearestBuilding, roadTiles_with_rotation);
+					return true;
 				}
 			}
 			else{
 				GenerateRoad(buildingLocations[buildingLocations.Count-1], nearestBuilding, new List<int>{});
+				return true;
 			}
 		}
-		
+		return true;
 	}
 
 	private void GenerateRoad(Vector3 pos1, Vector3 pos2, List<int> additations){
 		int x = 1;
 		int y = 0;
+		int z = 1;
 		int roadIndex = 0;
 		GD.Print(additations.Count);
 		bool up = false;
@@ -256,17 +266,23 @@ public class RoadGen : MapGen
 		}
 
 		if (pos1.z < pos2.z){
-			for (int z = 1; z < Math.Abs((int)pos1.z - (int)pos2.z); z++){
+			for (; z < Math.Abs((int)pos1.z - (int)pos2.z); z++){
 				if(!additations.Contains(roadIndex++)){
 					SetRoadTile((int)pos1.x+x, (int)pos1.y+y, (int)pos1.z+z, 16);
 				}
 				else{
 					SetSlopeTile((int)pos1.x+x, (int)pos1.y + ((up)? y++ : y---1), (int)pos1.z+z, slope_zOrientation);
 				}
+			}
+			// true = north
+			if(GetCellItem(x, y, z-1) == 0 || GetCellItem(x, y, z-1) == 51){
+				FollowRoad(x, y, z-1, true, x);
+			}else if (GetCellItem(x, y-1, z-1) == 51){
+				FollowRoad(x, y-1, z-1, true, x);
 			}
 		}
 		else {
-			for (int z = -1; z > -Math.Abs((int)pos1.z - (int)pos2.z); z--){
+			for (z = -1; z > -Math.Abs((int)pos1.z - (int)pos2.z); z--){
 				if(!additations.Contains(roadIndex++)){
 					SetRoadTile((int)pos1.x+x, (int)pos1.y+y, (int)pos1.z+z, 16);
 				}
@@ -274,11 +290,50 @@ public class RoadGen : MapGen
 					SetSlopeTile((int)pos1.x+x, (int)pos1.y + ((up)? y++ : y---1), (int)pos1.z+z, slope_zOrientation);
 				}
 			}
+			// false = south
+			if(GetCellItem(x, y, z-1) == 0 || GetCellItem(x, y, z-1) == 51){
+				FollowRoad(x, y, z-1, false, x);
+			}else if (GetCellItem(x, y-1, z-1) == 51){
+				FollowRoad(x, y-1, z-1, false, x);
+			}
 		}
-
+		
 		GD.Print(roadIndex);
 	}
 	
+	private Vector3 FollowRoad(int x, int y, int z, bool himmelsrichtung, int orgiana){
+		if (GetCellItem(x, y, z) == 16 || GetCellItem(x, y, z) == 21 || x == orgiana){
+			return new Vector3(x, y, z);
+		}else if (GetCellItem(x, y, z) == 51){
+			switch(GetCellItemOrientation(x, y, z)){
+				case 16 when himmelsrichtung:
+					z = z - 1;
+					y = y - 1;
+					return FollowRoad(x, y, z, himmelsrichtung, orgiana);
+					
+				case 22 when himmelsrichtung:
+					z = z - 1;
+					y = y + 1;
+					return FollowRoad(x, y, z, himmelsrichtung, orgiana);
+					
+				case 16 when !himmelsrichtung:
+					z = z + 1;
+					y = y + 1;
+					return FollowRoad(x, y, z, himmelsrichtung, orgiana);
+					
+				case 22 when !himmelsrichtung: 
+					z = z + 1;
+					y = y - 1;
+					return FollowRoad(x, y, z, himmelsrichtung, orgiana);
+					
+			}
+		}else if(himmelsrichtung){
+			return FollowRoad(x, y, z-1, himmelsrichtung, orgiana);
+		}else 
+			return FollowRoad(x, y, z+1, himmelsrichtung, orgiana);
+		return new Vector3();
+	}
+
 	public new void SetCellItem(int x, int y, int z, int item, int rot){
 		if(GetCellItem(x,y,z) != 14){
 			base.SetCellItem(x,y,z,item,rot);

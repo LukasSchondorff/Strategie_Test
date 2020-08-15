@@ -1,16 +1,15 @@
-[gd_scene load_steps=6 format=2]
+[gd_scene load_steps=5 format=2]
 
 [ext_resource path="res://src/Camera.gd" type="Script" id=1]
 [ext_resource path="res://src/Map/RoadGen.cs" type="Script" id=2]
-[ext_resource path="res://Assets/Map/Libs/final_with_enhancedSlope.meshlib" type="MeshLibrary" id=3]
 [ext_resource path="res://UI/GameUI/Interface.tscn" type="PackedScene" id=6]
 [ext_resource path="res://Assets/Map/Libs/final_with_collision.meshlib" type="MeshLibrary" id=7]
 
 [node name="Spatial" type="Spatial"]
 
 [node name="GridMap" type="GridMap" parent="."]
-mesh_library = ExtResource( 3 )
-cell_size = Vector3( 3, 1.55, 3 )
+mesh_library = ExtResource( 7 )
+cell_size = Vector3( 3, 1.5, 3 )
 cell_octant_size = 16
 cell_center_y = false
 collision_layer = 524288
