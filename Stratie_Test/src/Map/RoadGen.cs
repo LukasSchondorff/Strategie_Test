@@ -25,14 +25,16 @@ public class RoadGen : MapGen
 
 	public bool AddBuilding(Vector3 pos) {
 		pos /= CellSize;
+		pos = new Vector3((int)pos.x, (int)pos.y, (int)pos.z);
 		if (GetCellItem((int)pos.x, (int)pos.y, (int)pos.z) == 0){
-		return true;
+			buildingLocations.Add(pos);
+			return true;
 		}else {
-		for (int i = -2; i < 200; i++)
-		if (GetCellItem((int)pos.x, (int)pos.y+i, (int)pos.z) == 0 || GetCellItem((int)pos.x, (int)pos.y+i, (int)pos.z) == 51){
-			return false;
-		}}
-		buildingLocations.Add(pos);
+			for (int i = -2; i < 200; i++)
+				if (GetCellItem((int)pos.x, (int)pos.y+i, (int)pos.z) == 0 || GetCellItem((int)pos.x, (int)pos.y+i, (int)pos.z) == 51){
+					return false;
+				}
+		}
 		if(buildingLocations.Count >= 2){
 			Vector3 nearestBuilding = GetNearestBuilding(pos);
 
@@ -41,7 +43,7 @@ public class RoadGen : MapGen
 			int road_length = (int)distances.x + (int)distances.z;
 			int road_height = (int)distances.y;
 
-			GD.Print(distances);
+			//GD.Print(distances);
 
 			if(road_height != 0){
 
@@ -58,14 +60,23 @@ public class RoadGen : MapGen
 					RandomNumberGenerator randomizer = new RandomNumberGenerator();
 					List<int> roadTiles = new List<int>();
 					if(distances.x > 0){
-						roadTiles.AddRange(Enumerable.Range(0, (int)(distances.x))); 
+						roadTiles.AddRange(Enumerable.Range(0, (int)(distances.x)-1)); 
+
+						if(distances.z > 1){
+							roadTiles.AddRange(Enumerable.Range((int)(distances.x+1), (int)(distances.z)-2)); 
+						}
 					}
-					if(distances.z > 0){
-						roadTiles.AddRange(Enumerable.Range((int)(distances.x+1), (int)(distances.z)-1)); 
+					else{
+						if(distances.z > 0){
+							roadTiles.AddRange(Enumerable.Range((int)(distances.x), (int)(distances.z)-1)); 
+						}
 					}
 
 					List<int> roadTiles_with_rotation = new List<int>();
 					for(int y = 0; y < road_height; y++){
+						if(roadTiles.Count == 0){
+							return false;
+						}
 						int rand = randomizer.RandiRange(0, roadTiles.Count-1);
 						int tmp = roadTiles[rand];
 						roadTiles.Remove(tmp);
@@ -73,22 +84,30 @@ public class RoadGen : MapGen
 						roadTiles_with_rotation.Add(tmp);
 					}
 
-					GD.Print(road_height);					
+					//GD.Print(roadTiles_with_rotation.Count, " ", road_height);					
 
-					GenerateRoad(buildingLocations[buildingLocations.Count-1], nearestBuilding, roadTiles_with_rotation);
+					Vector3 ret = TestBuildingRoadConnection(pos, nearestBuilding);
+					GD.Print(ret);
+					buildingLocations.Add(pos);
+					GenerateRoad(buildingLocations[buildingLocations.Count-1], (ret == new Vector3(0,0,0))? nearestBuilding : ret, roadTiles_with_rotation);
 					return true;
 				}
 			}
 			else{
-				GenerateRoad(buildingLocations[buildingLocations.Count-1], nearestBuilding, new List<int>{});
+				Vector3 ret = TestBuildingRoadConnection(pos, nearestBuilding);
+				GD.Print(ret);
+				buildingLocations.Add(pos);
+				GenerateRoad(buildingLocations[buildingLocations.Count-1], (ret == new Vector3(0,0,0))? nearestBuilding : ret, new List<int>{});
 				return true;
 			}
 		}
+		buildingLocations.Add(pos);
 		return true;
 	}
 
 	private void GenerateRoad(Vector3 pos1, Vector3 pos2, List<int> additations){
-		int x = 1;
+		GD.Print(pos1, " | ", pos2);
+		int x = (pos1.x == pos2.x)? 0 : 1;
 		int y = 0;
 		int z = 1;
 		int roadIndex = 0;
@@ -175,94 +194,100 @@ public class RoadGen : MapGen
 					SetRoadTile((int)pos1.x+x, (int)pos1.y+y, (int)pos1.z, 0);
 				}
 				else{
-					SetSlopeTile((int)pos1.x+x, (int)pos1.y + ((up)? y++ : y--), (int)pos1.z, slope_xOrientation);
+					SetSlopeTile((int)pos1.x+x, (int)pos1.y + ((up)? y++ : y---1), (int)pos1.z, slope_xOrientation);
 				}
 			}
 		}
 		else {
-			for (x = -1; x > -Math.Abs((int)pos1.x - (int)pos2.x); x--){
+			if(Math.Abs((int)pos1.x - (int)pos2.x) > 0){
+				x = -1;
+			}
+			for (; x > -Math.Abs((int)pos1.x - (int)pos2.x); x--){
 				if(!additations.Contains(roadIndex++)){
 					SetRoadTile((int)pos1.x+x, (int)pos1.y+y, (int)pos1.z, 0);
 				}
 				else{
-					SetSlopeTile((int)pos1.x+x, (int)pos1.y + ((up)? y++ : y--), (int)pos1.z, slope_xOrientation);
+					SetSlopeTile((int)pos1.x+x, (int)pos1.y + ((up)? y++ : y---1), (int)pos1.z, slope_xOrientation);
 				}
 			}
 		}
 		RandomNumberGenerator rand = new RandomNumberGenerator();
 		rand.Randomize();
 
-		roadIndex++;
 
-		switch(localOrientation){
-			case 0:
-				if(GetCellItem((int)pos1.x+x, (int)pos1.y, (int)pos1.z) == 0){
-					SetCornerOnRoad((int)pos1.x+x, (int)pos1.y+y, (int)pos1.z, localOrientation);
-					break;
-				}
-				if(GetCellItem((int)pos1.x+x, (int)pos1.y, (int)pos1.z) == 13){
-					SetCornerOnT((int)pos1.x+x, (int)pos1.y+y, (int)pos1.z, localOrientation);
-					break;
-				}
-				if(GetCellItem((int)pos1.x+x, (int)pos1.y, (int)pos1.z) == 16 || GetCellItem((int)pos1.x+x, (int)pos1.y, (int)pos1.z) == 22){
-					SetCornerOnCorner((int)pos1.x+x, (int)pos1.y+y, (int)pos1.z, localOrientation);
-					break;
-				}
-				else {
-					SetCellItem((int)pos1.x+x, (int)pos1.y+y, (int)pos1.z, (rand.RandiRange(0, 1) == 0) ? 22:16, localOrientation);
-					break;
-				}
-			case 10:
-				if(GetCellItem((int)pos1.x+x, (int)pos1.y, (int)pos1.z) == 0){
-					SetCornerOnRoad((int)pos1.x+x, (int)pos1.y+y, (int)pos1.z, localOrientation);
-					break;
-				}
-				if(GetCellItem((int)pos1.x+x, (int)pos1.y, (int)pos1.z) == 13){
-					SetCornerOnT((int)pos1.x+x, (int)pos1.y+y, (int)pos1.z, localOrientation);
-					break;
-				}
-				if(GetCellItem((int)pos1.x+x, (int)pos1.y, (int)pos1.z) == 16 || GetCellItem((int)pos1.x+x, (int)pos1.y, (int)pos1.z) == 22){
-					SetCornerOnCorner((int)pos1.x+x, (int)pos1.y+y, (int)pos1.z, localOrientation);
-					break;
-				}
-				else {
-					SetCellItem((int)pos1.x+x, (int)pos1.y+y, (int)pos1.z, (rand.RandiRange(0, 1) == 0) ? 22:16, localOrientation);
-					break;
-				}
-			case 22:
-				if(GetCellItem((int)pos1.x+x, (int)pos1.y, (int)pos1.z) == 0){
-					SetCornerOnRoad((int)pos1.x+x, (int)pos1.y+y, (int)pos1.z, localOrientation);
-					break;
-				}
-				if(GetCellItem((int)pos1.x+x, (int)pos1.y, (int)pos1.z) == 13){
-					SetCornerOnT((int)pos1.x+x, (int)pos1.y+y, (int)pos1.z, localOrientation);
-					break;
-				}
-				if(GetCellItem((int)pos1.x+x, (int)pos1.y, (int)pos1.z) == 16 || GetCellItem((int)pos1.x+x, (int)pos1.y, (int)pos1.z) == 22){
-					SetCornerOnCorner((int)pos1.x+x, (int)pos1.y+y, (int)pos1.z, localOrientation);
-					break;
-				}
-				else {
-					SetCellItem((int)pos1.x+x, (int)pos1.y+y, (int)pos1.z, (rand.RandiRange(0, 1) == 0) ? 22:16, localOrientation);
-					break;
-				}
-			case 16:
-				if(GetCellItem((int)pos1.x+x, (int)pos1.y, (int)pos1.z) == 0){
-					SetCornerOnRoad((int)pos1.x+x, (int)pos1.y+y, (int)pos1.z, localOrientation);
-					break;
-				}
-				if (GetCellItem((int)pos1.x+x, (int)pos1.y, (int)pos1.z) == 13){
-					SetCornerOnT((int)pos1.x+x, (int)pos1.y+y, (int)pos1.z, localOrientation);
-					break;
-				}
-				if(GetCellItem((int)pos1.x+x, (int)pos1.y, (int)pos1.z) == 16 || GetCellItem((int)pos1.x+x, (int)pos1.y, (int)pos1.z) == 22){
-					SetCornerOnCorner((int)pos1.x+x, (int)pos1.y+y, (int)pos1.z, localOrientation);
-					break;
-				}
-				else {
-					SetCellItem((int)pos1.x+x, (int)pos1.y+y, (int)pos1.z, (rand.RandiRange(0, 1) == 0) ? 22:16, localOrientation);
-					break;
-				}
+		if(pos1.x != pos2.x && pos1.z != pos2.z){
+			roadIndex++;
+			switch(localOrientation){
+				case 0:
+					if(GetCellItem((int)pos1.x+x, (int)pos1.y, (int)pos1.z) == 0){
+						SetCornerOnRoad((int)pos1.x+x, (int)pos1.y+y, (int)pos1.z, localOrientation);
+						break;
+					}
+					if(GetCellItem((int)pos1.x+x, (int)pos1.y, (int)pos1.z) == 13){
+						SetCornerOnT((int)pos1.x+x, (int)pos1.y+y, (int)pos1.z, localOrientation);
+						break;
+					}
+					if(GetCellItem((int)pos1.x+x, (int)pos1.y, (int)pos1.z) == 16 || GetCellItem((int)pos1.x+x, (int)pos1.y, (int)pos1.z) == 22){
+						SetCornerOnCorner((int)pos1.x+x, (int)pos1.y+y, (int)pos1.z, localOrientation);
+						break;
+					}
+					else {
+						SetCellItem((int)pos1.x+x, (int)pos1.y+y, (int)pos1.z, (rand.RandiRange(0, 1) == 0) ? 22:16, localOrientation);
+						break;
+					}
+				case 10:
+					if(GetCellItem((int)pos1.x+x, (int)pos1.y, (int)pos1.z) == 0){
+						SetCornerOnRoad((int)pos1.x+x, (int)pos1.y+y, (int)pos1.z, localOrientation);
+						break;
+					}
+					if(GetCellItem((int)pos1.x+x, (int)pos1.y, (int)pos1.z) == 13){
+						SetCornerOnT((int)pos1.x+x, (int)pos1.y+y, (int)pos1.z, localOrientation);
+						break;
+					}
+					if(GetCellItem((int)pos1.x+x, (int)pos1.y, (int)pos1.z) == 16 || GetCellItem((int)pos1.x+x, (int)pos1.y, (int)pos1.z) == 22){
+						SetCornerOnCorner((int)pos1.x+x, (int)pos1.y+y, (int)pos1.z, localOrientation);
+						break;
+					}
+					else {
+						SetCellItem((int)pos1.x+x, (int)pos1.y+y, (int)pos1.z, (rand.RandiRange(0, 1) == 0) ? 22:16, localOrientation);
+						break;
+					}
+				case 22:
+					if(GetCellItem((int)pos1.x+x, (int)pos1.y, (int)pos1.z) == 0){
+						SetCornerOnRoad((int)pos1.x+x, (int)pos1.y+y, (int)pos1.z, localOrientation);
+						break;
+					}
+					if(GetCellItem((int)pos1.x+x, (int)pos1.y, (int)pos1.z) == 13){
+						SetCornerOnT((int)pos1.x+x, (int)pos1.y+y, (int)pos1.z, localOrientation);
+						break;
+					}
+					if(GetCellItem((int)pos1.x+x, (int)pos1.y, (int)pos1.z) == 16 || GetCellItem((int)pos1.x+x, (int)pos1.y, (int)pos1.z) == 22){
+						SetCornerOnCorner((int)pos1.x+x, (int)pos1.y+y, (int)pos1.z, localOrientation);
+						break;
+					}
+					else {
+						SetCellItem((int)pos1.x+x, (int)pos1.y+y, (int)pos1.z, (rand.RandiRange(0, 1) == 0) ? 22:16, localOrientation);
+						break;
+					}
+				case 16:
+					if(GetCellItem((int)pos1.x+x, (int)pos1.y, (int)pos1.z) == 0){
+						SetCornerOnRoad((int)pos1.x+x, (int)pos1.y+y, (int)pos1.z, localOrientation);
+						break;
+					}
+					if (GetCellItem((int)pos1.x+x, (int)pos1.y, (int)pos1.z) == 13){
+						SetCornerOnT((int)pos1.x+x, (int)pos1.y+y, (int)pos1.z, localOrientation);
+						break;
+					}
+					if(GetCellItem((int)pos1.x+x, (int)pos1.y, (int)pos1.z) == 16 || GetCellItem((int)pos1.x+x, (int)pos1.y, (int)pos1.z) == 22){
+						SetCornerOnCorner((int)pos1.x+x, (int)pos1.y+y, (int)pos1.z, localOrientation);
+						break;
+					}
+					else {
+						SetCellItem((int)pos1.x+x, (int)pos1.y+y, (int)pos1.z, (rand.RandiRange(0, 1) == 0) ? 22:16, localOrientation);
+						break;
+					}
+			}
+			
 		}
 
 		if (pos1.z < pos2.z){
@@ -276,9 +301,9 @@ public class RoadGen : MapGen
 			}
 			// true = north
 			if(GetCellItem(x, y, z-1) == 0 || GetCellItem(x, y, z-1) == 51){
-				FollowRoad(x, y, z-1, true, x);
+				//FollowRoad(x, y, z-1, true, x);
 			}else if (GetCellItem(x, y-1, z-1) == 51){
-				FollowRoad(x, y-1, z-1, true, x);
+				//FollowRoad(x, y-1, z-1, true, x);
 			}
 		}
 		else {
@@ -292,13 +317,13 @@ public class RoadGen : MapGen
 			}
 			// false = south
 			if(GetCellItem(x, y, z-1) == 0 || GetCellItem(x, y, z-1) == 51){
-				FollowRoad(x, y, z-1, false, x);
+				//FollowRoad(x, y, z-1, false, x);
 			}else if (GetCellItem(x, y-1, z-1) == 51){
-				FollowRoad(x, y-1, z-1, false, x);
+				//FollowRoad(x, y-1, z-1, false, x);
 			}
 		}
 		
-		GD.Print(roadIndex);
+		//GD.Print(roadIndex);
 	}
 
 	[RemoteSync]
@@ -309,17 +334,71 @@ public class RoadGen : MapGen
 
 			if(item == 51){
 				for(int i = 1; i <= 2; i++){
-					((GridMap) GetNode("./")).SetCellItem(x, y, z, -1, 0);
+					((GridMap) GetNode("./")).SetCellItem(x, y + i, z, -1, 0);
 				}
 			}
 			else {
-				((GridMap) GetNode("./")).SetCellItem(x, y, z, -1, 0);
+				((GridMap) GetNode("./")).SetCellItem(x, y  +1, z, -1, 0);
 			}
 		}
 	}
 	
-	private Vector3 FollowRoad(int x, int y, int z, bool himmelsrichtung, int orgiana){
-		if (GetCellItem(x, y, z) == 16 || GetCellItem(x, y, z) == 21 || x == orgiana){
+	private Vector3 TestBuildingRoadConnection(Vector3 pos1, Vector3 pos2){
+		GD.Print(pos1, " | ", pos2);
+		Vector3 startRoadPos = new Vector3();
+		if(pos1.z < pos2.z){
+			if(GetCellItem((int)pos2.x, (int)pos2.y, (int)pos2.z-1) == 0){
+				startRoadPos = new Vector3(pos2.x, pos2.y, pos2.z-1);
+			}
+			else{
+				if(GetCellItem((int)pos2.x, (int)pos2.y, (int)pos2.z-1) == -1){
+					if(GetCellItem((int)pos2.x, (int)pos2.y-1, (int)pos2.z-1) == 51){
+						startRoadPos = new Vector3(pos2.x, pos2.y-1, pos2.z-1);
+					}
+					else{
+						return pos2;
+					}
+				}
+				else{
+					if(GetCellItem((int)pos2.x, (int)pos2.y, (int)pos2.z-1) == 51){
+						startRoadPos = new Vector3(pos2.x, pos2.y, pos2.z-1);
+					}
+					else{
+						return pos2;
+					}
+				}
+			}
+			return FollowRoad((int)startRoadPos.x, (int)startRoadPos.y, (int)startRoadPos.z, true, pos1);
+		}
+		else{
+			if(GetCellItem((int)pos2.x, (int)pos2.y, (int)pos2.z+1) == 0){
+				startRoadPos = new Vector3(pos2.x, pos2.y, pos2.z+1);
+			}
+			else{
+				if(GetCellItem((int)pos2.x, (int)pos2.y, (int)pos2.z+1) == -1){
+					if(GetCellItem((int)pos2.x, (int)pos2.y-1, (int)pos2.z+1) == 51){
+						startRoadPos = new Vector3(pos2.x, pos2.y-1, pos2.z+1);
+					}
+					else{
+						return pos2;
+					}
+				}
+				else{
+					if(GetCellItem((int)pos2.x, (int)pos2.y, (int)pos2.z-1) == 51){
+						startRoadPos = new Vector3(pos2.x, pos2.y, pos2.z-1);
+					}
+					else{
+						return pos2;
+					}
+				}
+			}
+			return FollowRoad((int)startRoadPos.x, (int)startRoadPos.y, (int)startRoadPos.z, false, pos1);
+		}
+	}
+
+	private Vector3 FollowRoad(int x, int y, int z, bool himmelsrichtung, Vector3 orgiana){
+		bool reached_x_z = (x == (int)orgiana.x || z == (int)orgiana.z);
+		if (GetCellItem(x, y, z) == 16 || GetCellItem(x, y, z) == 21 || GetCellItem(x, y, z) == 49){
 			return new Vector3(x, y, z);
 		}else if (GetCellItem(x, y, z) == 51){
 			switch(GetCellItemOrientation(x, y, z)){
@@ -344,11 +423,19 @@ public class RoadGen : MapGen
 					return FollowRoad(x, y, z, himmelsrichtung, orgiana);
 					
 			}
-		}else if(himmelsrichtung){
-			return FollowRoad(x, y, z-1, himmelsrichtung, orgiana);
-		}else 
-			return FollowRoad(x, y, z+1, himmelsrichtung, orgiana);
-		return new Vector3();
+		}
+		else{ 
+			if(!reached_x_z){
+				if(himmelsrichtung){
+					return FollowRoad(x, y, z-1, himmelsrichtung, orgiana);
+				}else
+					return FollowRoad(x, y, z+1, himmelsrichtung, orgiana);
+			}
+			else{
+				return new Vector3(x, y, z);
+			}
+		}
+		return new Vector3(0, 0, 0);
 	}
 
 	private void SetRoadTile(int x, int y, int z, int rot){
@@ -491,7 +578,7 @@ public class RoadGen : MapGen
 			case 22:
 				switch(GetCellItemOrientation(x, y, z)){
 					case 10:
-						SetCellItem(x, y, z, 13);
+						SetCellItem(x, y, z, 13, 22);
 						break;
 					case 0:
 						SetCellItem(x, y, z, 13, 16);
