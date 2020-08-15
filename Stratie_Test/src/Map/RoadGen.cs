@@ -11,7 +11,7 @@ public class RoadGen : MapGen
 	
 	[RemoteSync]
 	public override void SetCellItem(int x, int y, int z, int itemIndex){
-		((GridMap) GetNode("./")).SetCellItem(x,y,z,itemIndex);
+		((GridMap) GetNode("./")).SetCellItem(x, y, z, itemIndex);
 	}
 	
 	public override void _Ready()
@@ -278,18 +278,19 @@ public class RoadGen : MapGen
 
 		GD.Print(roadIndex);
 	}
-	
-	public new void SetCellItem(int x, int y, int z, int item, int rot){
+
+	[RemoteSync]
+	public override void SetCellItem(int x, int y, int z, int item, int rot){
 		if(GetCellItem(x,y,z) != 14){
-			base.SetCellItem(x,y,z,item,rot);
+			((GridMap) GetNode("./")).SetCellItem(x, y, z, item, rot);
 
 			if(item == 51){
 				for(int i = 1; i <= 2; i++){
-					base.SetCellItem(x,y+i,z,-1,0);
+					((GridMap) GetNode("./")).SetCellItem(x, y, z, -1, 0);
 				}
 			}
 			else {
-				base.SetCellItem(x,y+1,z,-1,0);
+				((GridMap) GetNode("./")).SetCellItem(x, y, z, -1, 0);
 			}
 		}
 	}

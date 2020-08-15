@@ -257,6 +257,9 @@ public abstract class MapGen : GridMap
 	[RemoteSync]
 	public abstract void SetCellItem(int x, int y, int z, int itemIndex);
 
+	[RemoteSync]
+	public new abstract void SetCellItem(int x, int y, int z, int itemIndex, int rotation);
+
 	/* now handled by static body on meshes
 	public void OnAreaInputEvent(Camera camera, InputEvent @event, Vector3 click_position, Vector3 click_normal, int shape_idx)
 	{
