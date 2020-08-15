@@ -355,6 +355,7 @@ public abstract class MapGen : GridMap
 								}
 							}
 						}
+						playerlevel.CheckSpaceAndDecide(pos1, pos2);
 					}
 				}
 			}
