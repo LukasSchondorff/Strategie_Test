@@ -371,7 +371,8 @@ public abstract class MapGen : GridMap
 					//GD.Print(res["position"], res["collider"]);
 					click_position += (Vector3) res["position"];
 				}
-				playerlevel.getBuildingLevel().CheckSpace_old(click_position, click_position);
+				if(((RoadGen)GetNode("./")).AddBuilding(click_position)) 
+					playerlevel.getBuildingLevel().CheckSpace_old(click_position, click_position);
 				EmitSignal(nameof(BuildingPlaced), click_position);
 			} 
 		}

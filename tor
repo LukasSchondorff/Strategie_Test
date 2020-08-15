@@ -1,0 +1,66 @@
+[1mdiff --git a/Stratie_Test/Map/GridMap.gd b/Stratie_Test/Map/GridMap.gd[m
+[1mindex 0070e97..dc5d85f 100644[m
+[1m--- a/Stratie_Test/Map/GridMap.gd[m
+[1m+++ b/Stratie_Test/Map/GridMap.gd[m
+[36m@@ -2,7 +2,7 @@[m [mextends GridMap[m
+ [m
+ [m
+ [m
+[31m-export var chunk_number:int = 15[m
+[32m+[m[32mexport var chunk_number:int = 4[m
+ var chunk_loader = 32[m
+ var width = chunk_number*chunk_loader[m
+ const height = 1[m
+[36m@@ -14,6 +14,7 @@[m [mvar pos2:Vector3[m
+ var mutex[m
+ [m
+ [m
+[32m+[m
+ func _ready():[m
+ 	randomize()[m
+ 	open_symplex_new = OpenSimplexNoise.new()[m
+[36m@@ -48,6 +49,7 @@[m [mfunc _generate_quadrant(fromto):[m
+ 			mutex.unlock()[m
+ [m
+ [m
+[32m+[m
+ func _generate_world():[m
+ 	var thread = [][m
+ 	var index = 0[m
+[1mdiff --git a/Stratie_Test/Map/Spatial.tscn b/Stratie_Test/Map/Spatial.tscn[m
+[1mindex 248525d..70e1af0 100644[m
+[1m--- a/Stratie_Test/Map/Spatial.tscn[m
+[1m+++ b/Stratie_Test/Map/Spatial.tscn[m
+[36m@@ -1,10 +1,11 @@[m
+ [gd_scene load_steps=5 format=2][m
+ [m
+ [ext_resource path="res://Map/tiles/collision_tiles.meshlib" type="MeshLibrary" id=1][m
+[31m-[ext_resource path="res://src/Map/MapGen.cs" type="Script" id=2][m
+[32m+[m[32m[ext_resource path="res://Map/GridMap.gd" type="Script" id=2][m
+ [ext_resource path="res://Map/Camera.gd" type="Script" id=3][m
+ [m
+ [sub_resource type="BoxShape" id=1][m
+[32m+[m[32mextents = Vector3( 1, 1, 2.0206 )[m
+ [m
+ [node name="Spatial" type="Spatial"][m
+ [m
+[36m@@ -23,13 +24,12 @@[m [m__meta__ = {[m
+ "_editor_clip_": 0,[m
+ "_editor_floor_": Vector3( 0, 2, 0 )[m
+ }[m
+[31m-chunk_number = 7[m
+ [m
+ [node name="Area" type="Area" parent="GridMap"][m
+ transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -1, 0, 0 )[m
+ [m
+ [node name="CollisionShape" type="CollisionShape" parent="GridMap/Area"][m
+[31m-transform = Transform( 449, 0, 0, 0, 0.5, 0, 0, 0, 453, 450, 0, 450 )[m
+[32m+[m[32mtransform = Transform( 900, 0, 0, 0, 0.5, 0, 0, 0, 900, 901, 0, 1815.5 )[m
+ shape = SubResource( 1 )[m
+ [m
+ [node name="Spatial" type="Spatial" parent="."][m
+[36m@@ -56,3 +56,4 @@[m [mlight_color = Color( 0.992157, 1, 0.8, 1 )[m
+ light_energy = 2.0[m
+ shadow_enabled = true[m
+ shadow_bias = 0.0[m
+[32m+[m[32m[connection signal="input_event" from="GridMap/Area" to="GridMap" method="_on_Area_input_event"][m
