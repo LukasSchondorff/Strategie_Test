@@ -106,7 +106,7 @@ public class BuildingLevel : GridMap {
     public void CurrentBuildingAction() {
         int id = current_building.getBuildingID();
         BuildingBase current_building_placeholder = current_building;
-        Node unit_node;
+        Spatial unit_node;
         
         switch (id) {
             case 49:
