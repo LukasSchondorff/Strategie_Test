@@ -56,7 +56,7 @@ public class UnitLevel {
             z_2 = swapper;
         }
         
-        unit_selected_list.Clear();
+        ClearSelectedUnits();
         foreach (var unit in unit_base_list) {
             Vector3 unit_pos = unit.getUnitPosition();
 
@@ -80,6 +80,10 @@ public class UnitLevel {
         foreach (var unit in unit_selected_list) {
             unit.MoveUnit(moveto, cellsize);
         }
+    }
+    
+    public void ClearSelectedUnits() {
+        unit_selected_list.Clear();
     }
     
     //--------------------------------------------------

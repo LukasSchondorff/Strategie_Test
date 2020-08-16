@@ -311,7 +311,7 @@ public abstract class MapGen : GridMap
 	private const float rayLength = 1000;
 
 	float placement_height_offset = 0f;
-	public override void _Input(InputEvent @event)
+	public override void _UnhandledInput(InputEvent @event)
 	{
 		if (@event is InputEventMouseButton eventMouseButton)
 		{
@@ -380,7 +380,8 @@ public abstract class MapGen : GridMap
 			} 
 		}
 	}
-
+	
+	/*
 	public override void _UnhandledInput(InputEvent @event){
 		if (@event is InputEventKey nnn && nnn.Pressed){
 			if (nnn.Scancode == (int) KeyList.E){
@@ -391,7 +392,7 @@ public abstract class MapGen : GridMap
 			}
 		}
 	}
-	
+	*/
 	
 	//TODO auslagern 
 	public PlayerLevel GetPlayerLevel() {

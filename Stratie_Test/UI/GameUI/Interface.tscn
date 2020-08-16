@@ -18,6 +18,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 margin_left = -400.0
 margin_top = -200.0
+mouse_filter = 2
 __meta__ = {
 "_edit_use_anchors_": false
 }
@@ -26,6 +27,7 @@ __meta__ = {
 margin_right = 400.0
 margin_bottom = 75.0
 rect_min_size = Vector2( 300, 50 )
+mouse_filter = 2
 __meta__ = {
 "_edit_use_anchors_": false
 }
@@ -35,3 +37,4 @@ anchor_right = 0.0
 anchor_bottom = 0.0
 margin_right = 75.0
 margin_bottom = 75.0
+mouse_filter = 0

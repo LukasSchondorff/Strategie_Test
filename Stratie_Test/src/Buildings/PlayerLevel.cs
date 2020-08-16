@@ -24,14 +24,15 @@ public class PlayerLevel {
     }
     //--------------------------------------------------
     public void CheckSpaceAndDecide(Vector3 pos1, Vector3 pos2) {
-        //TODO add prio so that we need to only check one of them
         if (pos1.Round() == pos2.Round()) {
             if (unitlevel.selectedUnits()) {
                 unitlevel.MoveSelectedUnits(pos1);
             }
         } else {
-            unitlevel.CheckSpace(pos1, pos2);
-            buildinglevel.CheckSpace(pos1, pos2);
+            // returns true if the space is empty
+            if (!unitlevel.CheckSpace(pos1, pos2)) {
+                buildinglevel.CheckSpace(pos1, pos2);
+            }
         }
     }
     //--------------------------------------------------
