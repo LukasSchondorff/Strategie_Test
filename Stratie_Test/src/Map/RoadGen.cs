@@ -41,7 +41,9 @@ public class RoadGen : MapGen
 			return true;
 		}else {
 			for (int i = -2; i < 200; i++)
-				if (GetCellItem((int)pos.x, (int)pos.y+i, (int)pos.z) == CellItem.StraightRoad || GetCellItem((int)pos.x, (int)pos.y+i, (int)pos.z) == CellItem.Building){
+				if (GetCellItem((int)pos.x, (int)pos.y+i, (int)pos.z) == CellItem.StraightRoad || GetCellItem((int)pos.x, (int)pos.y+i, (int)pos.z) == CellItem.Building
+					|| GetCellItem((int)pos.x, (int)pos.y+i, (int)pos.z) == CellItem.Slope || GetCellItem((int)pos.x, (int)pos.y+i, (int)pos.z) == CellItem.Corner1
+					|| GetCellItem((int)pos.x, (int)pos.y+i, (int)pos.z) == CellItem.Corner2){
 					return false;
 				}
 		}
@@ -131,7 +133,9 @@ public class RoadGen : MapGen
 			return true;
 		}else {
 			for (int i = -2; i < 200; i++)
-				if (GetCellItem((int)pos.x, (int)pos.y+i, (int)pos.z) == CellItem.StraightRoad || GetCellItem((int)pos.x, (int)pos.y+i, (int)pos.z) == CellItem.Building){
+				if (GetCellItem((int)pos.x, (int)pos.y+i, (int)pos.z) == CellItem.StraightRoad || GetCellItem((int)pos.x, (int)pos.y+i, (int)pos.z) == CellItem.Building
+					|| GetCellItem((int)pos.x, (int)pos.y+i, (int)pos.z) == CellItem.Slope || GetCellItem((int)pos.x, (int)pos.y+i, (int)pos.z) == CellItem.Corner1
+					|| GetCellItem((int)pos.x, (int)pos.y+i, (int)pos.z) == CellItem.Corner2){
 					return false;
 				}
 		}
