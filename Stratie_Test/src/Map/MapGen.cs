@@ -362,7 +362,7 @@ public abstract class MapGen : GridMap
 					}
 				}
 			}
-			if (eventMouseButton.ButtonIndex == (int) ButtonList.Right && eventMouseButton.IsPressed()){
+			if (eventMouseButton.ButtonIndex == (int) ButtonList.Right && !eventMouseButton.IsPressed()){
 				var camera = (Camera)GetNode("../Spatial/Camera");
 				var from = camera.ProjectRayOrigin(eventMouseButton.Position);
 				var to = from + camera.ProjectRayNormal(eventMouseButton.Position) * rayLength;
@@ -376,7 +376,7 @@ public abstract class MapGen : GridMap
 				}
 				if(((RoadGen)GetNode("./")).AddBuilding(click_position)) 
 					playerlevel.getBuildingLevel().CheckSpace_old(click_position, click_position);
-				EmitSignal(nameof(BuildingPlaced), click_position);
+				//EmitSignal(nameof(BuildingPlaced), click_position);
 			} 
 		}
 	}
