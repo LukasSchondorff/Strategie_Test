@@ -124,6 +124,92 @@ public class RoadGen : MapGen
 		}
 	}
 
+	public bool ValidBuildingLocation(Vector3 pos){
+		//pos /= CellSize;
+		pos = new Vector3((int)pos.x, (int)pos.y, (int)pos.z);
+		if (GetCellItem((int)pos.x, (int)pos.y, (int)pos.z) == CellItem.StraightRoad){
+			return true;
+		}else {
+			for (int i = -2; i < 200; i++)
+				if (GetCellItem((int)pos.x, (int)pos.y+i, (int)pos.z) == CellItem.StraightRoad || GetCellItem((int)pos.x, (int)pos.y+i, (int)pos.z) == CellItem.Building){
+					return false;
+				}
+		}
+		if(buildingLocations.Count >= 1){
+			Vector3 nearestBuilding = GetNearestBuilding(pos);
+			Vector3 nearestRoad = GetNearestRoad(pos);
+
+			Vector3 distances = new Vector3(Math.Abs((int)nearestBuilding.x-(int)pos.x), Math.Abs((int)nearestBuilding.y-(int)pos.y), Math.Abs((int)nearestBuilding.z-(int)pos.z));
+
+			if (nearestRoad != Vector3.Zero && pos.DistanceTo(nearestRoad) < pos.DistanceTo(nearestBuilding)){
+				distances = new Vector3(Math.Abs((int)nearestRoad.x-(int)pos.x), Math.Abs((int)nearestRoad.y-(int)pos.y), Math.Abs((int)nearestRoad.z-(int)pos.z));
+			}
+
+			int road_length = (int)distances.x + (int)distances.z;
+			int road_height = (int)distances.y;
+
+			if(road_height != 0){
+
+				if(road_length == 0) {
+					return false;
+				}
+				float slope_percentage =  road_height / road_length;
+
+				if(slope_percentage > 0.5f){
+					return false;
+					// TODO: Too steep
+				}
+				else{
+					RandomNumberGenerator randomizer = new RandomNumberGenerator();
+					List<int> roadTiles = new List<int>();
+					if(distances.x > 0){
+						roadTiles.AddRange(Enumerable.Range(0, (int)(distances.x)-1)); 
+
+						if(distances.z > 1){
+							roadTiles.AddRange(Enumerable.Range((int)(distances.x+1), (int)(distances.z)-2)); 
+						}
+					}
+					else{
+						if(distances.z > 0){
+							roadTiles.AddRange(Enumerable.Range((int)(distances.x), (int)(distances.z)-1)); 
+						}
+					}
+
+					List<int> roadTiles_with_rotation = new List<int>();
+					for(int y = 0; y < road_height; y++){
+						if(roadTiles.Count == 0){
+							return false;
+						}
+						int rand = randomizer.RandiRange(0, roadTiles.Count-1);
+						int tmp = roadTiles[rand];
+						roadTiles.Remove(tmp);
+
+						roadTiles_with_rotation.Add(tmp);
+					}				
+
+					return true;
+				}
+			}
+			else{
+				return true;
+			}
+		}
+		else{
+			return true;
+		}
+	}
+	public bool RemoveBuilding(Vector3 building){
+		return buildingLocations.Remove(building);
+	}
+
+	public bool RemoveLastBuilding(){
+		if(buildingLocations.Count > 0){
+			buildingLocations.RemoveAt(buildingLocations.Count-1);
+			return true;
+		}
+		return false;
+	}
+
 	private void GenerateRoad(Vector3 pos1, Vector3 pos2, List<int> additations){
 		GD.Print("from: ", pos1, " | to: ", pos2);
 		GD.Print("number of slopes: ", additations.Count);
@@ -715,7 +801,9 @@ public class RoadGen : MapGen
 			}
 		}
 		if (GetCellItem((int)nearestRoad.x, (int)nearestRoad.y, (int)nearestRoad.z) == CellItem.Slope){
-			return FollowRoad((int)nearestRoad.x, (int)nearestRoad.y, (int)nearestRoad.z, , pos);
+			Vector3 one = FollowRoad((int)nearestRoad.x, (int)nearestRoad.y, (int)nearestRoad.z, true, pos);
+			Vector3 two = FollowRoad((int)nearestRoad.x, (int)nearestRoad.y, (int)nearestRoad.z, false, pos);
+			return (pos.DistanceTo(one) < pos.DistanceTo(two)) ? one : two;
 		}
 		return nearestRoad;
 	}
