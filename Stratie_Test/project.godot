@@ -66,4 +66,3 @@ camera_amble={
 [rendering]
 
 threads/thread_model=2
-environment/default_environment="res://default_env.tres"
