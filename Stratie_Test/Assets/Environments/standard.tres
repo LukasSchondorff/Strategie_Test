@@ -1,0 +1,12 @@
+[gd_resource type="Environment" load_steps=2 format=2]
+
+[sub_resource type="ProceduralSky" id=1]
+
+[resource]
+background_mode = 2
+background_sky = SubResource( 1 )
+background_sky_orientation = Basis( 1, 0, 0, 0, -1, 3.25841e-07, 0, -3.25841e-07, -1 )
+background_energy = 0.4
+adjustment_brightness = 1.6
+adjustment_contrast = 1.9
+adjustment_saturation = 0.6

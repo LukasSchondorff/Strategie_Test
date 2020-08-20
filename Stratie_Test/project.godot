@@ -66,3 +66,5 @@ camera_amble={
 [rendering]
 
 threads/thread_model=2
+environment/default_clear_color=Color( 0.301961, 0.301961, 0.301961, 1 )
+environment/default_environment="res://Assets/Environments/standard.tres"
