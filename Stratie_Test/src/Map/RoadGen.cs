@@ -127,7 +127,6 @@ public class RoadGen : MapGen
 	}
 
 	public bool ValidBuildingLocation(Vector3 pos){
-		//pos /= CellSize;
 		pos = new Vector3((int)pos.x, (int)pos.y, (int)pos.z);
 		if (GetCellItem((int)pos.x, (int)pos.y, (int)pos.z) == CellItem.StraightRoad){
 			return true;
@@ -408,12 +407,6 @@ public class RoadGen : MapGen
 					SetSlopeTile((int)pos1.x+x, (int)pos1.y + ((up)? y++ : y---1), (int)pos1.z+z, slope_zOrientation);
 				}
 			}
-			// true = north
-			if(GetCellItem(x, y, z-1) == CellItem.StraightRoad || GetCellItem(x, y, z-1) == CellItem.Building){
-				//FollowRoad(x, y, z-1, true, x);
-			}else if (GetCellItem(x, y-1, z-1) == CellItem.Building){
-				//FollowRoad(x, y-1, z-1, true, x);
-			}
 		}
 		else {
 			for (z = -1; z > -Math.Abs((int)pos1.z - (int)pos2.z); z--){
@@ -424,15 +417,7 @@ public class RoadGen : MapGen
 					SetSlopeTile((int)pos1.x+x, (int)pos1.y + ((up)? y++ : y---1), (int)pos1.z+z, slope_zOrientation);
 				}
 			}
-			// false = south
-			if(GetCellItem(x, y, z-1) == CellItem.StraightRoad || GetCellItem(x, y, z-1) == CellItem.Building){
-				//FollowRoad(x, y, z-1, false, x);
-			}else if (GetCellItem(x, y-1, z-1) == CellItem.Building){
-				//FollowRoad(x, y-1, z-1, false, x);
-			}
 		}
-		
-		//GD.Print(roadIndex);
 	}
 
 	[RemoteSync]
@@ -452,6 +437,7 @@ public class RoadGen : MapGen
 		}
 	}
 	
+	/*
 	private Vector3 TestBuildingRoadConnection(Vector3 pos1, Vector3 pos2){
 		GD.Print(pos1, " | ", pos2);
 		Vector3 startRoadPos = new Vector3();
@@ -550,6 +536,7 @@ public class RoadGen : MapGen
 		}
 		return Vector3.Zero;
 	}
+	*/
 
 	private Vector3 FollowRoadImproved(int x, int y, int z, bool himmelsrichtung, Vector3 orgiana, Vector3 lastStraightRoad){
 		bool reached_z = false;
@@ -805,8 +792,8 @@ public class RoadGen : MapGen
 			}
 		}
 		if (GetCellItem((int)nearestRoad.x, (int)nearestRoad.y, (int)nearestRoad.z) == CellItem.Slope){
-			Vector3 one = FollowRoad((int)nearestRoad.x, (int)nearestRoad.y, (int)nearestRoad.z, true, pos);
-			Vector3 two = FollowRoad((int)nearestRoad.x, (int)nearestRoad.y, (int)nearestRoad.z, false, pos);
+			Vector3 one = FollowRoadImproved((int)nearestRoad.x, (int)nearestRoad.y, (int)nearestRoad.z, true, pos, Vector3.Zero);
+			Vector3 two = FollowRoadImproved((int)nearestRoad.x, (int)nearestRoad.y, (int)nearestRoad.z, false, pos, Vector3.Zero);
 			return (pos.DistanceTo(one) < pos.DistanceTo(two)) ? one : two;
 		}
 		return nearestRoad;
