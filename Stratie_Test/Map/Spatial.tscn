@@ -2,7 +2,7 @@
 
 [ext_resource path="res://src/Camera.gd" type="Script" id=1]
 [ext_resource path="res://src/Map/BuildingGhosts.cs" type="Script" id=2]
-[ext_resource path="res://Assets/Map/Libs/final_with_enhancedSlope.meshlib" type="MeshLibrary" id=3]
+[ext_resource path="res://Assets/Map/Libs/final_with_corner_collision.meshlib" type="MeshLibrary" id=3]
 [ext_resource path="res://UI/GameUI/Interface.tscn" type="PackedScene" id=6]
 [ext_resource path="res://Assets/Map/Libs/final_with_collision.meshlib" type="MeshLibrary" id=7]
 
