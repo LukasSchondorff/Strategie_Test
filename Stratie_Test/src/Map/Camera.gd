@@ -1,4 +1,4 @@
-extends Camera
+extends Spatial
 
 var camera_speed = 70
 var camera_zoom = 200
