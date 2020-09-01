@@ -317,7 +317,7 @@ public abstract class MapGen : GridMap
 		{
 			if (eventMouseButton.ButtonIndex == (int) ButtonList.Left)
 			{
-				var camera = (Camera)GetNode("../Spatial/Camera");
+				var camera = (Camera)GetNode("../CameraGimbal/InnerGimbal/Camera");
 				var from = camera.ProjectRayOrigin(eventMouseButton.Position);
 				var to = from + camera.ProjectRayNormal(eventMouseButton.Position) * rayLength;
 				var spaceState = GetWorld().DirectSpaceState;
@@ -363,7 +363,7 @@ public abstract class MapGen : GridMap
 				}
 			}
 			if (eventMouseButton.ButtonIndex == (int) ButtonList.Right && !eventMouseButton.IsPressed()){
-				var camera = (Camera)GetNode("../Spatial/Camera");
+				var camera = (Camera)GetNode("../CameraGimbal/InnerGimbal/Camera");
 				var from = camera.ProjectRayOrigin(eventMouseButton.Position);
 				var to = from + camera.ProjectRayNormal(eventMouseButton.Position) * rayLength;
 				var spaceState = GetWorld().DirectSpaceState;
