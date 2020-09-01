@@ -32,7 +32,7 @@ public class BuildingGhosts : RoadGen
 	private Vector3 lastMouseSnap;
 	public override void _Input(InputEvent @event){
 		if (@event is InputEventMouseMotion eventMouseMotion){
-			var camera = (Camera)GetNode("../Spatial/Camera");
+			var camera = (Camera)GetNode("../CameraGimbal/InnerGimbal/Camera");
 			var from = camera.ProjectRayOrigin(eventMouseMotion.Position);
 			var to = from + camera.ProjectRayNormal(eventMouseMotion.Position) * rayLength;
 			var spaceState = GetWorld().DirectSpaceState;
