@@ -55,7 +55,6 @@ public class BuildingGhosts : RoadGen
 						outline_mesh.SetSurfaceMaterial(0, red);
 						((MeshInstance)outline_mesh.GetNode("Colour")).Mesh.SurfaceSetMaterial(0, red);
 					}
-					GD.Print(lastMouseSnap);
 				}
 			}
 		}
