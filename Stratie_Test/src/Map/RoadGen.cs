@@ -36,10 +36,12 @@ public class RoadGen : MapGen
 		road_path = new List<Vector3>();
 		Connect("BuildingPlaced", this, nameof(AddBuilding));
 
+		/*
 		SetCellItem(0,2,1, CellItem.Slope_Arch_OverKopf, 2);
 		SetCellItem(0,2,2, CellItem.Slope_Arch_OverKopf, 8);
 		SetCellItem(0,2,3, CellItem.Slope_Arch_OverKopf, 18);
 		SetCellItem(0,2,4, CellItem.Slope_Arch_OverKopf, 20);
+		*/
 
 		base._Ready();
 	}
@@ -784,66 +786,91 @@ public class RoadGen : MapGen
 
 	private void SetBridgeTile(){
 		bool bridge_shift = false;
+		bool reversed = false;
 		if (road_path[road_path.Count-1].y < road_path[0].y){
 			road_path.Reverse();
-			if((road_path[road_path.Count-1].z - road_path[0].z) % 2 == 0){
+			reversed = true;
+			GD.Print("Reversed");
+			if(Math.Abs((road_path[road_path.Count-1].z - road_path[0].z)) % 2 == 0){
 				bridge_shift = true;
 			}
 		}
 		else{
-			if((road_path[road_path.Count-1].x - road_path[0].x) % 2 == 0){
+			if(Math.Abs((road_path[road_path.Count-1].x - road_path[0].x)) % 2 != 0){
 				bridge_shift = true;
 			}
 		}
-		int direction = 0;
-		int counting__ = 0;
+		GD.Print(bridge_shift);
+		int direction = 4;
+		int direction1 = 4;
 		int arch_length = 4;
-		List<Vector3[]> road_path_splitter9000 = new List<Vector3[]>();
-		Vector3[] brain_bridge_tiles = new Vector3[arch_length];
-		//if(zitter_gleich) road_path.Reverse();
 
-		for(int i = 0; i < road_path.Count; i++){
-			if(i%arch_length == 0){
-				counting__ = 0;
-				GenerateBridgeArch(brain_bridge_tiles, bridge_shift, direction);
-				brain_bridge_tiles = new Vector3[arch_length];
-				road_path_splitter9000.Add(brain_bridge_tiles);
-			}
-			if(i != road_path.Count-1){
-				if(GetCellItem((int)road_path[i].x, (int)road_path[i].y, (int)road_path[i].z) == CellItem.Corner1 || GetCellItem((int)road_path[i].x, (int)road_path[i].y, (int)road_path[i].z) == CellItem.Corner2 && i%2 != 0){
-					if(road_path[i].x < road_path[i+1].x){
-						direction = 0; //east
-					}
-					else if(road_path[i].x > road_path[i+1].x){
-						direction = 1; //west	
-					}
-					else if(road_path[i].z < road_path[i+1].z){
-						direction = 2; //south
-					}
-					else if(road_path[i].z > road_path[i+1].z){
-						direction = 3; //north
-					}
-				//bridge_shift = false;
-				}else{
-					if(road_path[i].x < road_path[i+1].x){
-						direction = 0; //east
-					}
-					else if(road_path[i].x > road_path[i+1].x){
-						direction = 1; //west	
-					}
-					else if(road_path[i].z < road_path[i+1].z){
-						direction = 2; //south
-					}
-					else if(road_path[i].z > road_path[i+1].z){
-						direction = 3; //north
-					}
-				//bridge_shift = true;
+		Vector3 corner = new Vector3(-100,-100,-100);
+		foreach(Vector3 elem in road_path){
+			if(GetCellItem((int)elem.x, (int)elem.y, (int)elem.z) == CellItem.Corner1 || GetCellItem((int)elem.x, (int)elem.y, (int)elem.z) == CellItem.Corner2){
+				corner = elem;
+				if(road_path[0].x < elem.x){
+					direction = 0; //east
 				}
-				//foreach(Vector3[] ELEMENT in road_path_splitter9000)
-					//GenerateBridgeArch(brain_bridge_tiles, bridge_shift, direction);
-				//first_arch = true;
-				brain_bridge_tiles[counting__++] = road_path[i];
+				else if(road_path[0].x > elem.x){
+					direction = 1; //west	
+				}
+				else if(road_path[0].z < elem.z){
+					direction = 2; //south
+				}
+				else if(road_path[0].z > elem.z){
+					direction = 3; //north
+				}
+
+				if(road_path[road_path.Count-1].x < elem.x){
+					direction1 = 0; //east
+				}
+				else if(road_path[road_path.Count-1].x > elem.x){
+					direction1 = 1; //west	
+				}
+				else if(road_path[road_path.Count-1].z < elem.z){
+					direction1 = 2; //south
+				}
+				else if(road_path[road_path.Count-1].z > elem.z){
+					direction1 = 3; //north
+				}
 			}
+		}
+		if(direction == 4 || direction1 == 4){
+			Vector3 elem = road_path[road_path.Count-1];
+			if(road_path[0].x < elem.x){
+				direction = 0; //east
+			}
+			else if(road_path[0].x > elem.x){
+				direction = 1; //west	
+			}
+			else if(road_path[0].z < elem.z){
+				direction = 2; //south
+			}
+			else if(road_path[0].z > elem.z){
+				direction = 3; //north
+			}
+			direction1 = direction;
+		}	
+
+
+		GD.Print(direction, " | ", direction1);
+
+		for(int q = 0; q < road_path.Count; ){
+			if(corner.x != -100 && q >= road_path.IndexOf(corner))
+				if (!GenerateBridgeArch(road_path[q], bridge_shift, reversed, direction1)){
+					q = i;
+				}
+				else{
+					q += arch_length;
+				}
+			else
+				if (!GenerateBridgeArch(road_path[q], bridge_shift, reversed, direction)){
+					q = i;
+				}
+				else{
+					q += arch_length;
+				}
 		}
 		first_arch = true;
 		i = 0;
@@ -851,7 +878,7 @@ public class RoadGen : MapGen
 	}
 	bool first_arch = true;
 	int i = 0;
-	private void GenerateBridgeArch(Vector3[] tiles, bool bridge_shift, int direction){
+	private bool GenerateBridgeArch(Vector3 first, bool bridge_shift, bool reversed, int direction){
 		int ypsilon_offset = -1;
 		int arch_pos = 0;
 		if(bridge_shift == true && first_arch){
@@ -859,41 +886,49 @@ public class RoadGen : MapGen
 			first_arch = false;
 		}
 		for(;arch_pos < 4; arch_pos++){
-			int x = (int)road_path[i].x;
-			int y = (int)road_path.ElementAt(i).y;
-			int z = (int)road_path.ElementAt(i).z;
+			if(i >= road_path.Count) return false;
+			int x, y, z;
+			x = (int)road_path[i].x;
+			y = (int)road_path.ElementAt(i).y;
+			z = (int)road_path.ElementAt(i).z;
 			i++;
-			if(y == 0)return;
+			if(y == 0)return false;
 			y-=1;
 			if(direction == 0){
 				if(arch_pos == 0){
 					for(;y >= 0; y--){
 						SetBridgerinoItem(x, y, z, CellItem.Pillar);
 					}
+					if(GetCellItem((int)first.x, (int)first.y, (int)first.z) == CellItem.Slope){
+						first.y++;
+					}
 				}
 				else if(arch_pos == 1){
-					SetBridgerinoItem(x, (int)tiles.ElementAt(0).y+ypsilon_offset, z, CellItem.Slope_Arch_OverKopf, 18);//mirrored y-plane
+					SetBridgerinoItem(x, (int)first.y+ypsilon_offset, z, CellItem.Slope_Arch_OverKopf, (reversed)? 2 : 8);//mirrored y-plane
 				}
 				else if(arch_pos == 2){
-					SetBridgerinoItem(x, (int)tiles.ElementAt(0).y+ypsilon_offset, z, CellItem.Pillar);
+					SetBridgerinoItem(x, (int)first.y+ypsilon_offset, z, CellItem.Pillar);
 				}
 				else if(arch_pos == 3){
-					SetBridgerinoItem(x, (int)tiles.ElementAt(0).y+ypsilon_offset, z, CellItem.Slope_Arch_OverKopf, 20);//mirrored direction-plane
+					SetBridgerinoItem(x, (int)first.y+ypsilon_offset, z, CellItem.Slope_Arch_OverKopf, (reversed)? 8 : 2);//mirrored direction-plane
 				}
 			}else if(direction == 1){
 				if(arch_pos == 0){
 					for(;y >= 0; y--){
 						SetBridgerinoItem(x, y, z, CellItem.Pillar);
 					}
+					if(GetCellItem((int)first.x, (int)first.y, (int)first.z) == CellItem.Slope){
+						first.y++;
+					}
 				}
 				else if(arch_pos == 1){
-					SetBridgerinoItem(x, (int)tiles.ElementAt(0).y+ypsilon_offset, z, CellItem.Slope_Arch_OverKopf, 18);//mirrored y-plane
+					SetBridgerinoItem(x, (int)first.y+ypsilon_offset, z, CellItem.Slope_Arch_OverKopf, (reversed)? 8 : 2);//mirrored y-plane
 				}
 				else if(arch_pos == 2){
-					SetBridgerinoItem(x, (int)tiles.ElementAt(0).y+ypsilon_offset, z, CellItem.Pillar);
+					SetBridgerinoItem(x, (int)first.y+ypsilon_offset, z, CellItem.Pillar);
 				}
 				else if(arch_pos == 3){
-					SetBridgerinoItem(x, (int)tiles.ElementAt(0).y+ypsilon_offset, z, CellItem.Slope_Arch_OverKopf, 20);//mirrored direction-plane
+					SetBridgerinoItem(x, (int)first.y+ypsilon_offset, z, CellItem.Slope_Arch_OverKopf, (reversed)? 2 : 8);//mirrored direction-plane
 				}
 				
 			}else if(direction == 2){
@@ -901,37 +936,44 @@ public class RoadGen : MapGen
 					for(;y >= 0; y--){
 						SetBridgerinoItem(x, y, z, CellItem.Pillar);
 					}
+					if(GetCellItem((int)first.x, (int)first.y, (int)first.z) == CellItem.Slope){
+						first.y++;
+					}
 				}
 				else if(arch_pos == 1){
-					SetBridgerinoItem(x, (int)tiles.ElementAt(0).y+ypsilon_offset, z, CellItem.Slope_Arch_OverKopf, 2);//mirrored y-plane
+					SetBridgerinoItem(x, (int)first.y+ypsilon_offset, z, CellItem.Slope_Arch_OverKopf, (reversed)? 20 : 18);//mirrored y-plane
 				}
 				else if(arch_pos == 2){
-					SetBridgerinoItem(x, (int)tiles.ElementAt(0).y+ypsilon_offset, z, CellItem.Pillar);
+					SetBridgerinoItem(x, (int)first.y+ypsilon_offset, z, CellItem.Pillar);
 				}
 				else if(arch_pos == 3){
-					SetBridgerinoItem(x, (int)tiles.ElementAt(0).y+ypsilon_offset, z, CellItem.Slope_Arch_OverKopf, 8);//mirrored direction-plane
+					SetBridgerinoItem(x, (int)first.y+ypsilon_offset, z, CellItem.Slope_Arch_OverKopf, (reversed)? 18 : 20);//mirrored direction-plane
 				}
 			}else if(direction == 3){
 				if(arch_pos == 0){
 					for(;y >= 0; y--){
 						SetBridgerinoItem(x, y, z, CellItem.Pillar);
 					}
+					if(GetCellItem((int)first.x, (int)first.y, (int)first.z) == CellItem.Slope){
+						first.y++;
+					}
 				}
 				else if(arch_pos == 1){
-					SetBridgerinoItem(x, (int)tiles.ElementAt(0).y+ypsilon_offset, z, CellItem.Slope_Arch_OverKopf, 8);//mirrored y-plane
+					SetBridgerinoItem(x, (int)first.y+ypsilon_offset, z, CellItem.Slope_Arch_OverKopf, (reversed)? 18 : 20);//mirrored y-plane
 				}
 				else if(arch_pos == 2){
-					SetBridgerinoItem(x, (int)tiles.ElementAt(0).y+ypsilon_offset, z, CellItem.Pillar);
+					SetBridgerinoItem(x, (int)first.y+ypsilon_offset, z, CellItem.Pillar);
 				}
 				else if(arch_pos == 3){
-					SetBridgerinoItem(x, (int)tiles.ElementAt(0).y+ypsilon_offset, z, CellItem.Slope_Arch_OverKopf, 2);//mirrored direction-plane
+					SetBridgerinoItem(x, (int)first.y+ypsilon_offset, z, CellItem.Slope_Arch_OverKopf, (reversed)? 20 : 18);//mirrored direction-plane
 				}
 			}
-			for(int b = 0; GetCellItem(x, (int)tiles.ElementAt(0).y+b, z) == -1; b++){
-				//SetBridgerinoItem(x, (int)tiles.ElementAt(0).y+b, z, CellItem.Pillar);
+			for(int b = 0; GetCellItem(x, (int)first.y+b, z) == -1; b++){
+				//SetBridgerinoItem(x, (int)first.y+b, z, CellItem.Pillar);
 			}
 		}
 		arch_pos = 0;
+		return true;
 	}
 	private void SetSlopeTile(int x, int y, int z, int rot){
 		SetCellItem(x, y, z, CellItem.Slope, rot);
