@@ -66,6 +66,7 @@
     <Compile Include="src\Buildings\Buildings\TownCenter.cs" />
     <Compile Include="src\Buildings\PlayerLevel.cs" />
     <Compile Include="src\InputManager\UI\Interface.cs" />
+    <Compile Include="src\Map\BridgeGen.cs" />
     <Compile Include="src\Map\BuildingGhosts.cs" />
     <Compile Include="src\Map\RoadGen.cs" />
     <Compile Include="src\Multiplayer\Main.cs" />

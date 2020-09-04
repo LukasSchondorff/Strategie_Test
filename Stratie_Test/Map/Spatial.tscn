@@ -1,9 +1,10 @@
-[gd_scene load_steps=7 format=2]
+[gd_scene load_steps=8 format=2]
 
 [ext_resource path="res://src/Map/new_camera.gd" type="Script" id=1]
 [ext_resource path="res://src/Map/BuildingGhosts.cs" type="Script" id=2]
 [ext_resource path="res://Assets/Map/Libs/final_with_enhancedSlope.meshlib" type="MeshLibrary" id=3]
 [ext_resource path="res://src/Map/Camera.gd" type="Script" id=4]
+[ext_resource path="res://src/Map/BridgeGen.cs" type="Script" id=5]
 [ext_resource path="res://UI/GameUI/Interface.tscn" type="PackedScene" id=6]
 [ext_resource path="res://Assets/Map/Libs/final_with_collision.meshlib" type="MeshLibrary" id=7]
 
@@ -26,6 +27,9 @@ __meta__ = {
 }
 
 [node name="Area" type="Area" parent="GridMap"]
+
+[node name="BridgeGen" type="Node" parent="GridMap"]
+script = ExtResource( 5 )
 
 [node name="Spatial" type="Spatial" parent="."]
 script = ExtResource( 4 )
