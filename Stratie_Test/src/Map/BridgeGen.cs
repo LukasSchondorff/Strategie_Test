@@ -16,6 +16,7 @@ public class BridgeGen : Node
 	
 	public void SetBridgeTile(List<Vector3> road_path){
 		if(road_path.Count == 0) return;
+		if(road_path[0].y == 0 && road_path[road_path.Count-1].y == 0) return;
 		
 		bool bridge_shift = false;
 		bool reversed = false;
@@ -23,15 +24,29 @@ public class BridgeGen : Node
 			road_path.Reverse();
 			reversed = true;
 			GD.Print("Reversed");
-			if(Math.Abs((road_path[road_path.Count-1].z - road_path[0].z)) % 2 != 0){
+		}
+
+		int first_arch_pos = 0;
+		for(int l = 0; l < road_path.Count; l++){
+			if(road_path[l].y > 0){
+				first_arch_pos = l;
+				break;
+			}
+		}
+
+		GD.Print(first_arch_pos);
+
+		if(reversed){
+			if(Math.Abs((road_path[road_path.Count-1].z - road_path[first_arch_pos].z)) % 2 != 0){
 				bridge_shift = true;
 			}
 		}
 		else{
-			if(Math.Abs((road_path[road_path.Count-1].x - road_path[0].x)) % 2 == 0){
+			if(Math.Abs((road_path[road_path.Count-1].x - road_path[first_arch_pos].x)) % 2 != 0){
 				bridge_shift = true;
 			}
 		}
+
 		GD.Print(bridge_shift);
 
 		int direction = 4;
