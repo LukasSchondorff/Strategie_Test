@@ -20,7 +20,12 @@ public class BridgeGen : Node
 		
 		bool bridge_shift = false;
 		bool reversed = false;
-		if (road_path[road_path.Count-1].y <= road_path[0].y){
+		if(road_path[road_path.Count-1].y == road_path[0].y && roadGen.GetCellItem((int)road_path[road_path.Count-1].x, (int)road_path[road_path.Count-1].y, (int)road_path[road_path.Count-1].z) != RoadGen.CellItem.Slope){
+			road_path.Reverse();
+			reversed = true;
+			GD.Print("Reversed");
+		}
+		if (road_path[road_path.Count-1].y < road_path[0].y){
 			road_path.Reverse();
 			reversed = true;
 			GD.Print("Reversed");
@@ -140,8 +145,25 @@ public class BridgeGen : Node
 		if(i >= road_path.Count) return false;
 		int x, y, z;
 
-		if(bridge_shift == true && first_arch){
-			first_arch = false;
+		if(first_arch){
+			if(!bridge_shift){
+				x = (int)road_path[i].x;
+				y = (int)road_path.ElementAt(i).y + ypsilon_offset;
+				z = (int)road_path.ElementAt(i).z;
+				i++;
+				if(y < 0)return false;
+
+				if(roadGen.GetCellItem(x, y - ypsilon_offset, z) == RoadGen.CellItem.Corner1 && roadGen.GetCellItem(x, y - ypsilon_offset, z) == RoadGen.CellItem.Corner2){
+					direction = direction1;
+				}
+
+				for(;y >= 0; y--){
+					roadGen.SetBridgerinoItem(x, y, z, RoadGen.CellItem.Pillar);
+				}
+				if(roadGen.GetCellItem((int)first.x, (int)first.y, (int)first.z) == RoadGen.CellItem.Slope){
+					first.y++;
+				}
+			}
 		}
 		else{
 			x = (int)road_path[i].x;
@@ -339,6 +361,7 @@ public class BridgeGen : Node
 			}
 		}
 
+		first_arch = false;
 		return true;
 	}
 }
