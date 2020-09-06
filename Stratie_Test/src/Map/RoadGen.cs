@@ -53,7 +53,8 @@ public class RoadGen : MapGen
 		}
 		if(buildingLocations.Count >= 1){
 			Vector3 nearestBuilding = GetNearestBuilding(pos);
-			Vector3 nearestRoad = GetNearestRoad(pos);
+			bool movedZ;
+			Vector3 nearestRoad = GetNearestRoad(pos, out movedZ);
 
 			Vector3 distances = new Vector3(Math.Abs((int)nearestBuilding.x-(int)pos.x), Math.Abs((int)nearestBuilding.y-(int)pos.y), Math.Abs((int)nearestBuilding.z-(int)pos.z));
 
@@ -105,11 +106,11 @@ public class RoadGen : MapGen
 
 					buildingLocations.Add(pos);
 					if (nearestRoad != Vector3.Zero && pos.DistanceTo(nearestRoad) < pos.DistanceTo(nearestBuilding)){
-						GenerateRoad(nearestRoad, buildingLocations[buildingLocations.Count-1], roadTiles_with_rotation);
+						GenerateRoad((movedZ)? nearestRoad : buildingLocations[buildingLocations.Count-1], (movedZ)? buildingLocations[buildingLocations.Count-1] : nearestRoad, roadTiles_with_rotation);
 						zitter_gleich = true;
 					}
 					else {
-						GenerateRoad(buildingLocations[buildingLocations.Count-1], nearestBuilding, roadTiles_with_rotation);
+						GenerateRoad((!movedZ)? buildingLocations[buildingLocations.Count-1] : nearestBuilding, (!movedZ)? nearestBuilding : buildingLocations[buildingLocations.Count-1], roadTiles_with_rotation);
 						zitter_gleich = false;
 					}
 					return true;
@@ -118,11 +119,11 @@ public class RoadGen : MapGen
 			else{
 				buildingLocations.Add(pos);
 				if (nearestRoad != Vector3.Zero && pos.DistanceTo(nearestRoad) < pos.DistanceTo(nearestBuilding)){
-					GenerateRoad(nearestRoad, buildingLocations[buildingLocations.Count-1], new List<int>());
+					GenerateRoad((movedZ)? nearestRoad : buildingLocations[buildingLocations.Count-1], (movedZ)? buildingLocations[buildingLocations.Count-1] : nearestRoad, new List<int>());
 					zitter_gleich = true;
 				}
 				else {
-					GenerateRoad(buildingLocations[buildingLocations.Count-1], nearestBuilding, new List<int>());
+					GenerateRoad((!movedZ)? buildingLocations[buildingLocations.Count-1] : nearestBuilding, (!movedZ)? nearestBuilding : buildingLocations[buildingLocations.Count-1], new List<int>());
 					zitter_gleich = false;
 				}
 				return true;
@@ -148,7 +149,8 @@ public class RoadGen : MapGen
 		}
 		if(buildingLocations.Count >= 1){
 			Vector3 nearestBuilding = GetNearestBuilding(pos);
-			Vector3 nearestRoad = GetNearestRoad(pos);
+			bool movedZ;
+			Vector3 nearestRoad = GetNearestRoad(pos, out movedZ);
 
 			Vector3 distances = new Vector3(Math.Abs((int)nearestBuilding.x-(int)pos.x), Math.Abs((int)nearestBuilding.y-(int)pos.y), Math.Abs((int)nearestBuilding.z-(int)pos.z));
 
@@ -223,6 +225,43 @@ public class RoadGen : MapGen
 
 	private void GenerateRoad(Vector3 pos1, Vector3 pos2, List<int> additations){
 		List<Vector3> road_path = new List<Vector3>();
+
+		if(GetCellItem((int)pos1.x, (int)pos1.y, (int)pos1.z) != CellItem.Building && GetCellItem((int)pos1.x, (int)pos1.y, (int)pos1.z) != -1){
+			if(GetCellItem((int)pos1.x, (int)pos1.y, (int)pos1.z) == CellItem.StraightRoad){
+				if(pos1.x > pos2.x || pos1.z < pos2.z){
+					SetCornerOnRoad((int)pos1.x, (int)pos1.y, (int)pos1.z, 10);
+				}
+				else{
+					SetCornerOnRoad((int)pos1.x, (int)pos1.y, (int)pos1.z, 0);
+				}
+			}
+			else{
+				if(pos1.x != pos2.x){
+					SetRoadTile((int)pos1.x, (int)pos1.y, (int)pos1.z, 0);
+				}
+				else {
+					SetRoadTile((int)pos1.x, (int)pos1.y, (int)pos1.z, 16);
+				}
+			}
+		}
+		if(GetCellItem((int)pos2.x, (int)pos2.y, (int)pos2.z) != CellItem.Building && GetCellItem((int)pos1.x, (int)pos1.y, (int)pos1.z) != -1){
+			if(GetCellItem((int)pos2.x, (int)pos2.y, (int)pos2.z) == CellItem.StraightRoad){
+				if(pos2.x > pos1.x || pos2.z < pos1.z){
+					SetCornerOnRoad((int)pos2.x, (int)pos2.y, (int)pos2.z, 0);
+				}
+				else{
+					SetCornerOnRoad((int)pos2.x, (int)pos2.y, (int)pos2.z, 10);
+				}
+			}
+			else{
+				if(pos2.x != pos1.x){
+					SetRoadTile((int)pos2.x, (int)pos2.y, (int)pos2.z, 0);
+				}
+				else {
+					SetRoadTile((int)pos2.x, (int)pos2.y, (int)pos2.z, 16);
+				}
+			}
+		}
 
 		GD.Print("from: ", pos1, " | to: ", pos2);
 		GD.Print("number of slopes: ", additations.Count);
@@ -561,7 +600,61 @@ public class RoadGen : MapGen
 	}
 	*/
 
-	private Vector3 FollowRoadImproved(int x, int y, int z, bool himmelsrichtung, Vector3 orgiana, Vector3 lastStraightRoad){
+	private Vector3 FollowRoadImprovedX(int x, int y, int z, bool himmelsrichtung, Vector3 orgiana, Vector3 lastStraightRoad){
+		bool reached_x = false;
+		if (himmelsrichtung){
+			reached_x = x <= (int)orgiana.x;
+		}
+		else {
+			reached_x = x >= (int)orgiana.x;
+		}
+		switch (GetCellItem(x, y, z)){
+			case CellItem.Crossing:
+			case CellItem.StraightRoad:
+				if (reached_x){
+					return new Vector3(x, y, z);
+				}
+				Vector3 currRoad = new Vector3(x, y, z);
+				x += (himmelsrichtung)? -1 : 1;
+				return FollowRoadImprovedX(x, y, z, himmelsrichtung, orgiana, currRoad);
+			case CellItem.Corner1:
+			case CellItem.Corner2:
+				return new Vector3(x, y, z);
+			case CellItem.Slope:
+				y++;
+				x += (himmelsrichtung)? -1 : 1;
+				return FollowRoadImprovedX(x, y, z, himmelsrichtung, orgiana, lastStraightRoad);
+			case -1:
+				y--;
+				if (GetCellItem(x, y, z) == CellItem.Building){
+					x += (himmelsrichtung)? -1 : 1;
+					if (FollowRoadImprovedX(x, y, z, himmelsrichtung, orgiana, lastStraightRoad) == Vector3.Zero){
+						return lastStraightRoad;
+					}
+					else {
+						return FollowRoadImprovedX(x, y, z, himmelsrichtung, orgiana, lastStraightRoad);
+					}
+				}
+				else{
+					return Vector3.Zero;
+				}
+			case CellItem.Building:
+				return lastStraightRoad;
+			case CellItem.T:
+				if (FollowRoadImprovedX(x, y, z + ((himmelsrichtung)? -1 : 1), himmelsrichtung, orgiana, lastStraightRoad) == Vector3.Zero){
+					return new Vector3(x, y, z);
+				}
+				if (reached_x){
+					return new Vector3(x, y, z);
+				}
+				x += (himmelsrichtung)? -1 : 1;
+				return FollowRoadImprovedX(x, y, z, himmelsrichtung, orgiana, lastStraightRoad);
+		}
+
+		return Vector3.Zero;
+	}
+
+	private Vector3 FollowRoadImprovedZ(int x, int y, int z, bool himmelsrichtung, Vector3 orgiana, Vector3 lastStraightRoad){
 		bool reached_z = false;
 		if (himmelsrichtung){
 			reached_z = z <= (int)orgiana.z;
@@ -573,29 +666,27 @@ public class RoadGen : MapGen
 			case CellItem.Crossing:
 			case CellItem.StraightRoad:
 				if (reached_z){
-					z += (himmelsrichtung)? -1 : 1;
 					return new Vector3(x, y, z);
 				}
 				Vector3 currRoad = new Vector3(x, y, z);
 				z += (himmelsrichtung)? -1 : 1;
-				return FollowRoadImproved(x, y, z, himmelsrichtung, orgiana, currRoad);
+				return FollowRoadImprovedZ(x, y, z, himmelsrichtung, orgiana, currRoad);
 			case CellItem.Corner1:
 			case CellItem.Corner2:
-				z += (himmelsrichtung)? 1 : -1;
 				return new Vector3(x, y, z);
 			case CellItem.Slope:
 				y++;
 				z += (himmelsrichtung)? -1 : 1;
-				return FollowRoadImproved(x, y, z, himmelsrichtung, orgiana, lastStraightRoad);
+				return FollowRoadImprovedZ(x, y, z, himmelsrichtung, orgiana, lastStraightRoad);
 			case -1:
 				y--;
 				if (GetCellItem(x, y, z) == CellItem.Building){
 					z += (himmelsrichtung)? -1 : 1;
-					if (FollowRoadImproved(x, y, z, himmelsrichtung, orgiana, lastStraightRoad) == Vector3.Zero){
+					if (FollowRoadImprovedZ(x, y, z, himmelsrichtung, orgiana, lastStraightRoad) == Vector3.Zero){
 						return lastStraightRoad;
 					}
 					else {
-						return FollowRoadImproved(x, y, z, himmelsrichtung, orgiana, lastStraightRoad);
+						return FollowRoadImprovedZ(x, y, z, himmelsrichtung, orgiana, lastStraightRoad);
 					}
 				}
 				else{
@@ -604,16 +695,14 @@ public class RoadGen : MapGen
 			case CellItem.Building:
 				return lastStraightRoad;
 			case CellItem.T:
-				if (FollowRoadImproved(x, y, z + ((himmelsrichtung)? -1 : 1), himmelsrichtung, orgiana, lastStraightRoad) == Vector3.Zero){
-					z += (himmelsrichtung)? 1 : -1;
+				if (FollowRoadImprovedZ(x, y, z + ((himmelsrichtung)? -1 : 1), himmelsrichtung, orgiana, lastStraightRoad) == Vector3.Zero){
 					return new Vector3(x, y, z);
 				}
 				if (reached_z){
-					z += (himmelsrichtung)? 1 : -1;
 					return new Vector3(x, y, z);
 				}
 				z += (himmelsrichtung)? -1 : 1;
-				return FollowRoadImproved(x, y, z, himmelsrichtung, orgiana, lastStraightRoad);
+				return FollowRoadImprovedZ(x, y, z, himmelsrichtung, orgiana, lastStraightRoad);
 		}
 
 		return Vector3.Zero;
@@ -803,7 +892,7 @@ public class RoadGen : MapGen
 		return nearestBuilding;
 	}
 
-	private Vector3 GetNearestRoad(Vector3 pos){
+	private Vector3 GetNearestRoad(Vector3 pos, out bool movedZ){
 		Vector3 nearestRoad = new Vector3();
 		float closestDistance = width*length*height+1;
 		foreach(Vector3 other in roadLocations){
@@ -815,10 +904,17 @@ public class RoadGen : MapGen
 			}
 		}
 		if (GetCellItem((int)nearestRoad.x, (int)nearestRoad.y, (int)nearestRoad.z) == CellItem.Slope){
-			Vector3 one = FollowRoadImproved((int)nearestRoad.x, (int)nearestRoad.y, (int)nearestRoad.z, true, pos, Vector3.Zero);
-			Vector3 two = FollowRoadImproved((int)nearestRoad.x, (int)nearestRoad.y, (int)nearestRoad.z, false, pos, Vector3.Zero);
-			return (pos.DistanceTo(one) < pos.DistanceTo(two)) ? one : two;
+			Vector3 one = FollowRoadImprovedX((int)nearestRoad.x, (int)nearestRoad.y, (int)nearestRoad.z, true, pos, Vector3.Zero);
+			Vector3 two = FollowRoadImprovedX((int)nearestRoad.x, (int)nearestRoad.y, (int)nearestRoad.z, false, pos, Vector3.Zero);
+			Vector3 three = FollowRoadImprovedZ((int)nearestRoad.x, (int)nearestRoad.y, (int)nearestRoad.z, false, pos, Vector3.Zero);
+			Vector3 four = FollowRoadImprovedZ((int)nearestRoad.x, (int)nearestRoad.y, (int)nearestRoad.z, true, pos, Vector3.Zero);
+			
+			Vector3 five = (pos.DistanceTo(three) < pos.DistanceTo(four)) ? three : four; 
+			Vector3 six = (pos.DistanceTo(one) < pos.DistanceTo(two)) ? one : two;
+			movedZ = (pos.DistanceTo(five) < pos.DistanceTo(six));
+			return (pos.DistanceTo(five) < pos.DistanceTo(six)) ? five : six;
 		}
+		movedZ = true;
 		return nearestRoad;
 	}
 }
